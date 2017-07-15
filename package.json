@@ -1,6 +1,6 @@
 {
   "name": "lww.js",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A lightweight javascript windowing library with no external dependencies. Provides a few basic operations: Resize, collapse, close and maximize. This library is primarily meant for being able to spawn a window with arbitrary content - I.E it works best as being nothing but a wrapper around some content you only want to show at certain times. Built on https://github.com/arctelix/drag-resize-snap",
   "main": "src/lww-npm.js",
   "directories": {
@@ -11,14 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yngve-sk/drag-resize-snap.git"
+    "url": "git+https://github.com/yngve-sk/lww.js.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/yngve-sk/drag-resize-snap/issues"
+    "url": "https://github.com/yngve-sk/lww.js/issues"
   },
-  "homepage": "https://github.com/yngve-sk/drag-resize-snap#readme",
+  "keywords": ["window", "windowing","draggable","resizable","multi window", "modal", "popup"],
+  "homepage": "https://github.com/yngve-sk/lww.js",
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
