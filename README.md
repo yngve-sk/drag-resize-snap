@@ -8,9 +8,13 @@ What's different in this version: It is more similar to a desktop-style window, 
 
 #### installation:
 
-Manually add drs.js to your project directory or download with Bower:
+Usage with npm:
 
     npm install lww.js
+
+then in your code:
+
+    let LWW = require('lww.js');
 
 #### Usage:
 
