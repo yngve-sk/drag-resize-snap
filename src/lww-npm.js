@@ -91,6 +91,8 @@ let makeLWW = function (paneContainer, handle, options) {
 
     let collapseWidth = options.collapseWidth || false;
 
+    let enableSlide = options.hasOwnProperty('enableSlide') ? options.enableSlide : true;
+
     // snap on/off, will also hide ghost
     let disableSnap = options.disableSnap || false;
 
@@ -142,6 +144,11 @@ let makeLWW = function (paneContainer, handle, options) {
     </div>
     `;
 
+    let content = document.querySelector(`#${paneContainer.id}>.lww-content`);
+
+    function getContentContainer() {
+        return content;
+    }
 
     // End of what's configurable.
     paneContainer.style['min-width'] = minWidth;
@@ -171,12 +178,19 @@ let makeLWW = function (paneContainer, handle, options) {
             }
         },
         close: {
-            call: close,
+            call: toggleClosed,
             state: {
                 isClosed: false
             }
         }
     };
+
+    let callbacks = {};
+
+    let notifyCallback = (name, args) => {
+        if (callbacks[name])
+            callbacks[name](args);
+    }
 
     /* bindEvents(document.querySelector(`#${paneContainer.id}>.lww-header`), 'mouseenter mousedown touchstart', handleDown)
     bindEvents(document.querySelector(`#${paneContainer.id}>.lww-header`), 'mouseleave mouseup touchend', handleUp)
@@ -225,8 +239,7 @@ let makeLWW = function (paneContainer, handle, options) {
 
                 btn.call(btn.state);
 
-                if (btn.callback)
-                    btn.callback(btn.state);
+                notifyCallback(btnName, btn.state);
             };
 
             div.onmouseenter = (e) => {
@@ -250,7 +263,7 @@ let makeLWW = function (paneContainer, handle, options) {
     let sizeCache = null; // Stores prev bounds when collapsing
     updateSizeCache();
 
-    let onRightEdge, onBottomEdge, onLeftEdge, onTopEdge, isResizing;
+    let onRightEdge, onBottomEdge, onLeftEdge, onTopEdge, isResizing, isMouseDown = false;
     let rightScreenEdge, bottomScreenEdge, topScreenEdge, leftScreenEdge;
     let e, b = paneContainer.getBoundingClientRect(),
         x, y, inLR, inTB, preSnap;
@@ -327,8 +340,65 @@ let makeLWW = function (paneContainer, handle, options) {
 
     // core functions
 
+    function resize(w, h) {
+        setBounds(paneContainer, b.left, b.top, w, h);
+    }
+
+    function relocate(x, y) {
+        /* setX0(-b.left + x);
+        setY0(-b.top + y); */
+        setBounds(paneContainer,
+            Math.min(window.innerWidth - b.width, Math.max(x, 0)),
+            Math.min(window.innerHeight - b.height, Math.max(y, 0)),
+            b.width, b.height);
+    }
+
+    function setWidth(w) {
+        let diffMax = maxWidth - w,
+            diffMin = w - minWidth;
+
+        if (enableSlide && diffMax < 0)
+            setBounds(paneContainer, b.left - diffMax, b.top, maxWidth, b.height);
+        else if (enableSlide && diffMin < 0)
+            setBounds(paneContainer, b.left + diffMin, b.top, minWidth, b.height);
+        else
+            setBounds(paneContainer, b.left, b.top, w, b.height);
+    }
+
+    function setHeight(h) {
+        let diffMax = maxHeight - h,
+            diffMin = h - minHeight;
+
+        if (enableSlide && diffMax < 0)
+            setBounds(paneContainer, b.left, b.top - diffMax, b.width, maxHeight);
+        else if (enableSlide && diffMin < 0)
+            setBounds(paneContainer, b.left, b.top + diffMin, b.width, minHeight);
+        else
+            setBounds(paneContainer, b.left, b.top, b.width, h);
+    }
+
+    function setX0(x0) {
+        let width = b.width,
+            newWidth = Math.max(minWidth, Math.min(maxWidth, width - x0));
+
+        if (!enableSlide && newWidth === maxWidth || newWidth === minWidth)
+            return; // otherwise it'll be a drag operation ...
+
+        setBounds(paneContainer, b.left + x0, b.top, newWidth, b.height);
+    }
+
+    function setY0(y0) {
+        let height = b.height,
+            newHeight = Math.max(minHeight, Math.min(maxHeight, height - y0));
+
+        if (!enableSlide && newHeight === maxHeight || newHeight === minHeight)
+            return;
+
+        setBounds(paneContainer, b.left, b.top + y0, b.width, newHeight);
+    }
+
+
     function setBounds(element, x, y, w, h) {
-        console.log("Set Bounds for Z = " + Z);
         if (x === undefined) {
             b = b || paneContainer.getBoundingClientRect();
             x = b.left
@@ -359,10 +429,17 @@ let makeLWW = function (paneContainer, handle, options) {
 
         let wh = convertUnits(w, h)
 
-        element.style.left = x + 'px';
-        element.style.top = y + 'px';
-        element.style.width = wh[0];
-        element.style.height = wh[1];
+        if (x !== b.left)
+            element.style.left = x + 'px';
+
+        if (y !== b.top)
+            element.style.top = y + 'px';
+
+        if (w !== b.width)
+            element.style.width = wh[0];
+
+        if (h !== b.height)
+            element.style.height = wh[1];
     }
 
     function getBounds() {
@@ -469,9 +546,10 @@ let makeLWW = function (paneContainer, handle, options) {
     }
 
     function onDown(e) {
+        isMouseDown = true;
         Z_BUF['mouse'] = Z;
 
-        calc(e);
+        calc(e, true);
         //isResizing = onRightEdge || onBottomEdge || onTopEdge || onLeftEdge;
 
         clicked = {
@@ -492,7 +570,6 @@ let makeLWW = function (paneContainer, handle, options) {
 
     function canMove() {
         if (!onHTMLhandle) {
-            console.log("Not on handle!");
             return false;
         } else {
             return true;
@@ -632,7 +709,7 @@ let makeLWW = function (paneContainer, handle, options) {
         return h.coords
     }
 
-    function calc(e) {
+    function calc(e, updateState) {
         b = paneContainer.getBoundingClientRect();
         x = e.clientX - b.left;
         y = e.clientY - b.top;
@@ -652,7 +729,10 @@ let makeLWW = function (paneContainer, handle, options) {
         onBottomEdge = y >= bMi && y < bMo && inLR;
         onRightEdge = x >= rMi && x < rMo && inTB;
 
-        isResizing = onRightEdge || onBottomEdge || onTopEdge || onLeftEdge;
+        if (updateState) {
+            isResizing = onRightEdge || onBottomEdge || onTopEdge || onLeftEdge;
+        }
+
 
         rightScreenEdge = b.right > window.innerWidth - SNAP_MARGINS;
         bottomScreenEdge = b.bottom > window.innerHeight - SNAP_MARGINS;
@@ -660,83 +740,16 @@ let makeLWW = function (paneContainer, handle, options) {
         leftScreenEdge = b.left < SNAP_MARGINS;
     }
 
+
     function onMove(ee) {
-        calc(ee);
+        calc(ee, !isMouseDown);
         e = ee;
         redraw = true;
     }
 
-    function animate() {
 
-        if (ACTIVE)
-            requestAnimationFrame(animate);
 
-        if (isMouseOnButtons)
-            return;
-
-        if (!redraw) return;
-
-        redraw = false;
-
-        // handle resizeing
-        if (clicked && clicked.isResizing) {
-            if (clicked.onRightEdge)
-                paneContainer.style.width = Math.max(x, minWidth) + "px";
-            if (clicked.onBottomEdge)
-                paneContainer.style.height = Math.max(y, minHeight) + "px";
-            if (clicked.onLeftEdge) {
-                let currentWidth = Math.max(clicked.cx - e.clientX + clicked.w, minWidth);
-                if (currentWidth > minWidth) {
-                    paneContainer.style.width = currentWidth + "px";
-                    paneContainer.style.left = e.clientX + "px";
-                }
-            }
-            if (clicked.onTopEdge) {
-                let currentHeight = Math.max(clicked.cy - e.clientY + clicked.h, minHeight);
-                if (currentHeight > minHeight) {
-                    paneContainer.style.height = currentHeight + "px";
-                    paneContainer.style.top = e.clientY + "px";
-                }
-            }
-
-            hintHide();
-            return;
-        }
-
-        if (clicked && clicked.isMoving) {
-
-            let bounds = getBounds()
-
-            // Set bounds of ghost paneContainer
-            if (!disableSnap && bounds.length) {
-                bounds.unshift(ghostpaneContainer)
-                setBounds.apply(this, bounds);
-                ghostpaneContainer.style.opacity = 0.2;
-            } else {
-                hintHide();
-            }
-
-            // Unsnap with drag, set bounds to preSnap bounds
-            if (preSnap) {
-                preSnap.dragged = true
-                setBounds(paneContainer,
-                    e.clientX - preSnap.width / 2,
-                    e.clientY - Math.min(clicked.y, preSnap.height),
-                    preSnap.width,
-                    preSnap.height
-                );
-                return;
-            }
-
-            // moving
-            paneContainer.style.top = (e.clientY - clicked.y) + 'px';
-            paneContainer.style.left = (e.clientX - clicked.x) + 'px';
-
-            return;
-        }
-
-        // This code executes when mouse moves without clicking
-
+    function updateCursor() {
         // style cursor
         let suggestedCursor = '';
 
@@ -756,12 +769,97 @@ let makeLWW = function (paneContainer, handle, options) {
         }
 
         updateSuggestedCursor(Z, suggestedCursor);
+
+    }
+
+    function animate() {
+
+        if (ACTIVE)
+            requestAnimationFrame(animate);
+
+        if (isMouseOnButtons)
+            return;
+
+        if (!redraw) return;
+
+        redraw = false;
+
+        // handle resizeing
+        if (clicked && clicked.isResizing) {
+            if (clicked.onRightEdge)
+                setWidth(x); //paneContainer.style.width = Math.max(x, minWidth) + "px";
+            if (clicked.onBottomEdge)
+                setHeight(y); //paneContainer.style.height = Math.max(y, minHeight) + "px";
+            if (clicked.onLeftEdge) {
+                setX0(x);
+                /*
+                                let currentWidth = Math.max(clicked.cx - e.clientX + clicked.w, minWidth);
+                                if (currentWidth > minWidth) {
+                                    paneContainer.style.width = currentWidth + "px";
+                                    paneContainer.style.left = e.clientX + "px";
+                                } */
+            }
+            if (clicked.onTopEdge) {
+                setY0(y);
+                /*
+                let currentHeight = Math.max(clicked.cy - e.clientY + clicked.h, minHeight);
+                if (currentHeight > minHeight) {
+                    paneContainer.style.height = currentHeight + "px";
+                    paneContainer.style.top = e.clientY + "px";
+                } */
+            }
+
+            hintHide();
+            return;
+        }
+
+        if (clicked && clicked.isMoving) {
+
+            if (!disableSnap) {
+
+                let bounds = getBounds()
+                // Set bounds of ghost paneContainer
+                if (bounds.length) {
+                    bounds.unshift(ghostpaneContainer)
+                    setBounds.apply(this, bounds);
+                    ghostpaneContainer.style.opacity = 0.2;
+                } else {
+                    hintHide();
+                }
+
+                // Unsnap with drag, set bounds to preSnap bounds
+                if (preSnap) {
+                    preSnap.dragged = true
+                    setBounds(paneContainer,
+                        e.clientX - preSnap.width / 2,
+                        e.clientY - Math.min(clicked.y, preSnap.height),
+                        preSnap.width,
+                        preSnap.height
+                    );
+                    return;
+                }
+            }
+
+            // moving
+            /*             paneContainer.style.top = (e.clientY - clicked.y) + 'px';
+                        paneContainer.style.left = (e.clientX - clicked.x) + 'px';
+             */
+            relocate(e.clientX - clicked.x, e.clientY - clicked.y);
+
+            return;
+        }
+
+        // This code executes when mouse moves without clicking
+        updateCursor();
     }
 
     animate();
 
     function onUp(e) {
-        calc(e);
+        let wasResizing = isResizing,
+            wasMoving = clicked.isMoving;
+        calc(e, true);
+        isMouseDown = false;
 
         if (clicked && clicked.isMoving) {
             // Check for Snap
@@ -792,13 +890,19 @@ let makeLWW = function (paneContainer, handle, options) {
             } else {
                 preSnap = null;
             }
+
+            notifyCallback('moved', {
+                bounds: b
+            });
             hintHide();
         } else if (clicked && clicked.isResizing) {
             // set bounds after resize to make sure they are % as required
             setBounds(paneContainer)
+
+            notifyCallback('resized', {
+                bounds: b
+            });
         }
-
-
 
         clicked = null;
     }
@@ -845,13 +949,6 @@ let makeLWW = function (paneContainer, handle, options) {
     function bindEvents(ele, events, callback) {
         events = events.split(' ')
         for (let e in events) ele.addEventListener(events[e], callback)
-    }
-
-    function relocate(x, y) {
-        setBounds(paneContainer,
-            Math.min(window.innerWidth - b.width, Math.max(x, 0)),
-            Math.min(window.innerHeight - b.height, Math.max(y, 0)),
-            b.width, b.height);
     }
 
     function spawnNextTo(htmlElement, direction) {
@@ -945,13 +1042,22 @@ let makeLWW = function (paneContainer, handle, options) {
         paneContainer.style.height = sizeCache.h;
     }
 
-    function close() {
+    function toggleClosed(state) {
+        if (state.isClosed)
+            open();
+        else
+            close();
+
+        state.isClosed = !state.isClosed;
+    }
+
+    function close(state) {
         console.log("close()");
         ACTIVE = false;
         paneContainer.style.display = 'none';
     }
 
-    function open() {
+    function open(state) {
         console.log("open()");
         ACTIVE = true;
         animate();
@@ -995,7 +1101,7 @@ let makeLWW = function (paneContainer, handle, options) {
     }
 
     function on(action, callback) {
-        buttonsSpec[action].callback = callback;
+        callbacks[action] = callback;
     }
 
     return {
@@ -1015,7 +1121,9 @@ let makeLWW = function (paneContainer, handle, options) {
         setContent: setContent,
 
         // Add event listeners
-        on: on
+        on: on,
+
+        getContentContainer: getContentContainer
     }
 }
 
