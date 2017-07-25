@@ -1,7 +1,10 @@
 let LWWManager = require('../src/lww-v2');
 
 let BTN_HEIGHT = 40,
-    BTN_LENGTH = 60;
+    BTN_LENGTH = 60,
+
+    SIZE = [350, 250],
+    LOC = [25, 25];
 
 
 let DOCKS = {
@@ -111,8 +114,8 @@ let WINDOWS = [{
     },
     state: {
         override: 'none',
-        size: [500, 500],
-        location: [300, 300]
+        size: SIZE,
+        location: LOC
     }
 }, {
     options: {
@@ -137,8 +140,8 @@ let WINDOWS = [{
     },
     state: {
         override: 'none',
-        size: [500, 500],
-        location: [300, 300]
+        size: SIZE,
+        location: LOC
     }
 }, {
     options: {
@@ -163,8 +166,8 @@ let WINDOWS = [{
     },
     state: {
         override: 'none',
-        size: [500, 500],
-        location: [300, 300]
+        size: SIZE,
+        location: LOC
     }
 }];
 

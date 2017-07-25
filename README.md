@@ -1,14 +1,28 @@
-## drag-resize-snap
+## LWW - LightWeight Window
 
-#### Provides the ability to drag, re-size, and snap any html element with pure javascript in only 6.37kb minified!
+#### Tiny, simple JS library to create and manage multiple windows.
 
-Javascript windowing library based on drag-resize-snap by arctelix ( https://github.com/arctelix/drag-resize-snap ).
-What's different in this version: It is more similar to a desktop-style window, with buttons to support closing, minimizing and maximizing the window. Also this version supports multiple windows.
+Demo: https://rawgit.com/yngve-sk/lww.js/master/demo-v2/index.html
+
+Screenshots (8 docks with different flow directions with 3 windows each)
+![alt text](./screenshots/lww-demo-minimize.gif "Minimizing windows")
+![alt text](./screenshots/lww-demo-resize.gif "Resizing a window")
+
+
+Lightweight JS windowing library. Features:
+* Minimize to a dock
+* Multiple docks
+* Maximize windows
+* Collapse windows
+* Enable / disable features easily
+* Smooth resizing and relocating behavior
+
+
+Inspired by on drag-resize-snap by arctelix ( https://github.com/arctelix/drag-resize-snap ).
+
 
 
 #### installation:
-
-Manually add drs.js to your project directory or download with Bower:
 
     npm install lww.js
 
