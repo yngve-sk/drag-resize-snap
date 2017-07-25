@@ -1,31 +1,102 @@
 {
-  "name": "lww.js",
-  "version": "0.1.1",
-  "description": "A lightweight javascript windowing library with no external dependencies. Provides a few basic operations: Resize, collapse, close and maximize. This library is primarily meant for being able to spawn a window with arbitrary content - I.E it works best as being nothing but a wrapper around some content you only want to show at certain times. Built on https://github.com/arctelix/drag-resize-snap",
-  "main": "src/lww-npm.js",
-  "directories": {
-    "doc": "docs"
+  "_args": [
+    [
+      {
+        "raw": "lww.js",
+        "scope": null,
+        "escapedName": "lww.js",
+        "name": "lww.js",
+        "rawSpec": "",
+        "spec": "latest",
+        "type": "tag"
+      },
+      "/Users/admin/Desktop/master-oppgave/Project/client"
+    ]
+  ],
+  "_from": "lww.js@latest",
+  "_id": "lww.js@0.1.1",
+  "_inCache": true,
+  "_location": "/lww.js",
+  "_nodeVersion": "7.2.1",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/lww.js-0.1.1.tgz_1500136772953_0.584747651591897"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "_npmUser": {
+    "name": "ysk92",
+    "email": "ykr088@student.uib.no"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yngve-sk/lww.js.git"
+  "_npmVersion": "4.6.1",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "lww.js",
+    "scope": null,
+    "escapedName": "lww.js",
+    "name": "lww.js",
+    "rawSpec": "",
+    "spec": "latest",
+    "type": "tag"
   },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/lww.js/-/lww.js-0.1.1.tgz",
+  "_shasum": "58b224d81d0c4d4b70b1b4cfde419f093390c8c3",
+  "_shrinkwrap": null,
+  "_spec": "lww.js",
+  "_where": "/Users/admin/Desktop/master-oppgave/Project/client",
   "author": "",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/yngve-sk/lww.js/issues"
   },
-  "keywords": ["window", "windowing","draggable","resizable","multi window", "modal", "popup"],
-  "homepage": "https://github.com/yngve-sk/lww.js",
+  "dependencies": {},
+  "description": "A lightweight javascript windowing library. Provides a few basic operations: Resize, collapse, close and maximize. This library is primarily meant for being able to spawn a window with arbitrary content - I.E it works best as being nothing but a wrapper around some content you only want to show at certain times. Built on https://github.com/arctelix/drag-resize-snap",
   "devDependencies": {
     "grunt": "^1.0.1",
     "grunt-browserify": "^5.0.0",
     "grunt-contrib-cssmin": "^2.2.0",
     "grunt-contrib-uglify": "^3.0.1",
     "grunt-contrib-watch": "^1.0.0",
+    "jsdoc": "^3.5.3",
     "load-grunt-tasks": "^3.5.2"
-  }
+  },
+  "directories": {
+    "doc": "docs"
+  },
+  "dist": {
+    "shasum": "58b224d81d0c4d4b70b1b4cfde419f093390c8c3",
+    "tarball": "https://registry.npmjs.org/lww.js/-/lww.js-0.1.1.tgz"
+  },
+  "gitHead": "b869ef98117a4af97ada0b931c3a4c6e8c563151",
+  "homepage": "https://github.com/yngve-sk/lww.js",
+  "keywords": [
+    "window",
+    "windowing",
+    "draggable",
+    "resizable",
+    "multi window",
+    "modal",
+    "popup"
+  ],
+  "license": "ISC",
+  "main": "src/lww-npm.js",
+  "maintainers": [
+    {
+      "name": "ysk92",
+      "email": "ykr088@student.uib.no"
+    }
+  ],
+  "name": "lww.js",
+  "optionalDependencies": {},
+  "readme": "## drag-resize-snap\n\n#### Provides the ability to drag, re-size, and snap any html element with pure javascript in only 6.37kb minified!\n\nJavascript windowing library based on drag-resize-snap by arctelix ( https://github.com/arctelix/drag-resize-snap ).\nWhat's different in this version: It is more similar to a desktop-style window, with buttons to support closing, minimizing and maximizing the window. Also this version supports multiple windows.\n\n\n#### installation:\n\nManually add drs.js to your project directory or download with Bower:\n\n    npm install lww.js\n\n#### Usage:\n\nTODO, see demo/ to see how it is used.\n",
+  "readmeFilename": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yngve-sk/lww.js.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "0.1.1"
 }

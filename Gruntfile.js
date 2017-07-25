@@ -24,9 +24,11 @@ module.exports = function (grunt) {
                 interval: 100
             },
             js: {
-                files: ['src/**/*.js', 'demo/**/*.js', '!demo/demo-compiled.js'],
+                //files: ['src/**/*.js', 'demo/**/*.js', '!demo/demo-compiled.js'],
+                files: ['src/**/*.js', 'demo-v2/**/*.js', '!demo-v2/demo.js'],
                 tasks: [
-                    'dist',
+                    //'dist',
+                    'demo2'
                 ]
             }
         },
@@ -35,6 +37,11 @@ module.exports = function (grunt) {
                 files: {
                     'dist/lww.js': ['src/lww-npm.js'],
                     'demo/demo-compiled.js': ['demo/demo.js']
+                }
+            },
+            demo2: {
+                files: {
+                    'demo-v2/demo.js': ['demo-v2/demo-src.js']
                 }
             }
         },
@@ -79,4 +86,5 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist', ['browserify:dist']);
+    grunt.registerTask('demo2', ['browserify:demo2']);
 };

@@ -111,7 +111,7 @@ let makeLWW = function (paneContainer, handle, options) {
     //  * Minimize/Maximize
     //  * Relocate to (x,y)
 
-    let tripleClickToCenter = options.tripleClickToCenter || true;
+    let tripleClickToCenter = options.hasOwnProperty('tripleClickToCenter') ? options.tripleClickToCenter : true;
 
     let Z;
 
@@ -145,6 +145,11 @@ let makeLWW = function (paneContainer, handle, options) {
     `;
 
     let content = document.querySelector(`#${paneContainer.id}>.lww-content`);
+
+    function InjectAngularContent(tag, Injector) {
+        /* content.innerHTML = tag; */
+        Injector(content, tag);
+    }
 
     function getContentContainer() {
         return content;
@@ -856,6 +861,9 @@ let makeLWW = function (paneContainer, handle, options) {
     animate();
 
     function onUp(e) {
+        if (!clicked)
+            return;
+
         let wasResizing = isResizing,
             wasMoving = clicked.isMoving;
         calc(e, true);
@@ -1123,6 +1131,8 @@ let makeLWW = function (paneContainer, handle, options) {
         // Add event listeners
         on: on,
 
+        // Angular injector
+        InjectAngularContent: InjectAngularContent,
         getContentContainer: getContentContainer
     }
 }
