@@ -1,37 +1,188 @@
 let LWWManager = require('../src/lww-v2');
 
-LWWManager.createDock('left', {
-    position: 'left',
-    offset: '20%',
-    width: '5%'
-});
+let BTN_HEIGHT = 40,
+    BTN_LENGTH = 60;
 
-LWWManager.addWindow('window1', {
+
+let DOCKS = {
+    leftDown: {
+        anchor: {
+            x: 'left',
+            y: 'top',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    leftUp: {
+        anchor: {
+            x: 'left',
+            y: 'bottom',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    rightDown: {
+        anchor: {
+            x: 'right',
+            y: 'top',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    rightUp: {
+        anchor: {
+            x: 'right',
+            y: 'bottom',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+
+    topRight: {
+        anchor: {
+            x: 'left',
+            y: 'top',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    topLeft: {
+        anchor: {
+            x: 'right',
+            y: 'top',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    bottomRight: {
+        anchor: {
+            x: 'left',
+            y: 'bottom',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    bottomLeft: {
+        anchor: {
+            x: 'right',
+            y: 'bottom',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+};
+
+let WINDOWS = [{
     options: {
-        title: 'Title',
-
+        title: 'Win1',
         minimizable: true,
         maximizable: true,
         collapsible: true,
 
+        buttons: ['collapse', 'minimize', 'maximize'],
+
         bounds: {
-            min: [100, 100],
+            min: [230, 100],
             max: [700, 700],
-            headerHeight: 30
+            headerHeight: 30,
         },
+
         resizeMargin: 8,
         icon: undefined,
         dock: {
-            name: 'left'
+            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
         }
     },
-
-
-    // 'maximized' | 'docked' | [x, y, w, h]
     state: {
-        override: false,
+        override: 'none',
         size: [500, 500],
-        location: [300, 50]
-    },
+        location: [300, 300]
+    }
+}, {
+    options: {
+        title: 'Win2',
+        minimizable: true,
+        maximizable: true,
+        collapsible: true,
 
-});
+        buttons: ['collapse', 'minimize', 'maximize'],
+
+        bounds: {
+            min: [230, 100],
+            max: [700, 700],
+            headerHeight: 30,
+        },
+
+        resizeMargin: 8,
+        icon: undefined,
+        dock: {
+            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
+        }
+    },
+    state: {
+        override: 'none',
+        size: [500, 500],
+        location: [300, 300]
+    }
+}, {
+    options: {
+        title: 'Win3',
+        minimizable: true,
+        maximizable: true,
+        collapsible: true,
+
+        buttons: ['collapse', 'minimize', 'maximize'],
+
+        bounds: {
+            min: [230, 100],
+            max: [700, 700],
+            headerHeight: 30,
+        },
+
+        resizeMargin: 8,
+        icon: undefined,
+        dock: {
+            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
+        }
+    },
+    state: {
+        override: 'none',
+        size: [500, 500],
+        location: [300, 300]
+    }
+}];
+
+let count = 0;
+
+for (let DOCKNAME in DOCKS) {
+    let CONFIG = DOCKS[DOCKNAME];
+    LWWManager.createDock(DOCKNAME, CONFIG);
+
+    for (let WINCONFIGTEMPLATE of WINDOWS) {
+        let WINCONFIG = {
+            options: Object.assign({}, WINCONFIGTEMPLATE.options),
+            state: Object.assign({}, WINCONFIGTEMPLATE.state),
+        };
+        WINCONFIG.options.title += DOCKNAME;
+        WINCONFIG.options.dock = {};
+        WINCONFIG.options.dock.name = DOCKNAME;
+
+        LWWManager.addWindow('window' + count++, WINCONFIG);
+    }
+}

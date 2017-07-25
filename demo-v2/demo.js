@@ -1,41 +1,192 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 let LWWManager = require('../src/lww-v2');
 
-LWWManager.createDock('left', {
-    position: 'left',
-    offset: '20%',
-    width: '5%'
-});
+let BTN_HEIGHT = 40,
+    BTN_LENGTH = 60;
 
-LWWManager.addWindow('window1', {
+
+let DOCKS = {
+    leftDown: {
+        anchor: {
+            x: 'left',
+            y: 'top',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    leftUp: {
+        anchor: {
+            x: 'left',
+            y: 'bottom',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    rightDown: {
+        anchor: {
+            x: 'right',
+            y: 'top',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    rightUp: {
+        anchor: {
+            x: 'right',
+            y: 'bottom',
+            offsetY: '10%',
+            flow: 'vertical'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+
+    topRight: {
+        anchor: {
+            x: 'left',
+            y: 'top',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    topLeft: {
+        anchor: {
+            x: 'right',
+            y: 'top',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    bottomRight: {
+        anchor: {
+            x: 'left',
+            y: 'bottom',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+    bottomLeft: {
+        anchor: {
+            x: 'right',
+            y: 'bottom',
+            offsetX: '10%',
+            flow: 'horizontal'
+        },
+        buttonHeight: BTN_HEIGHT,
+        buttonLength: BTN_LENGTH
+    },
+};
+
+let WINDOWS = [{
     options: {
-        title: 'Title',
-
+        title: 'Win1',
         minimizable: true,
         maximizable: true,
         collapsible: true,
 
+        buttons: ['collapse', 'minimize', 'maximize'],
+
         bounds: {
-            min: [100, 100],
+            min: [230, 100],
             max: [700, 700],
-            headerHeight: 30
+            headerHeight: 30,
         },
+
         resizeMargin: 8,
         icon: undefined,
         dock: {
-            name: 'left'
+            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
         }
     },
-
-
-    // 'maximized' | 'docked' | [x, y, w, h]
     state: {
-        override: false,
+        override: 'none',
         size: [500, 500],
-        location: [300, 50]
-    },
+        location: [300, 300]
+    }
+}, {
+    options: {
+        title: 'Win2',
+        minimizable: true,
+        maximizable: true,
+        collapsible: true,
 
-});
+        buttons: ['collapse', 'minimize', 'maximize'],
+
+        bounds: {
+            min: [230, 100],
+            max: [700, 700],
+            headerHeight: 30,
+        },
+
+        resizeMargin: 8,
+        icon: undefined,
+        dock: {
+            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
+        }
+    },
+    state: {
+        override: 'none',
+        size: [500, 500],
+        location: [300, 300]
+    }
+}, {
+    options: {
+        title: 'Win3',
+        minimizable: true,
+        maximizable: true,
+        collapsible: true,
+
+        buttons: ['collapse', 'minimize', 'maximize'],
+
+        bounds: {
+            min: [230, 100],
+            max: [700, 700],
+            headerHeight: 30,
+        },
+
+        resizeMargin: 8,
+        icon: undefined,
+        dock: {
+            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
+        }
+    },
+    state: {
+        override: 'none',
+        size: [500, 500],
+        location: [300, 300]
+    }
+}];
+
+let count = 0;
+
+for (let DOCKNAME in DOCKS) {
+    let CONFIG = DOCKS[DOCKNAME];
+    LWWManager.createDock(DOCKNAME, CONFIG);
+
+    for (let WINCONFIGTEMPLATE of WINDOWS) {
+        let WINCONFIG = {
+            options: Object.assign({}, WINCONFIGTEMPLATE.options),
+            state: Object.assign({}, WINCONFIGTEMPLATE.state),
+        };
+        WINCONFIG.options.title += DOCKNAME;
+        WINCONFIG.options.dock = {};
+        WINCONFIG.options.dock.name = DOCKNAME;
+
+        LWWManager.addWindow('window' + count++, WINCONFIG);
+    }
+}
 },{"../src/lww-v2":2}],2:[function(require,module,exports){
 let LOC_TO_MOUSE_STYLE = {
     'bottom-left': 'nesw-resize',
@@ -47,7 +198,8 @@ let LOC_TO_MOUSE_STYLE = {
     'bottom': 'ns-resize',
     'header': 'move',
     'top': 'ns-resize',
-    'content': 'default'
+    'content': 'default',
+    'button': 'default'
 };
 
 /**
@@ -93,11 +245,18 @@ class LWWManager {
 
     // Creates a dock that windows can be minimized to / maximized from
     createDock(name, args) {
-
+        this.docks[name] = new Dock(name, args, this);
     }
 
     addWindow(name, args) {
         this.windows[name] = new LWW(name, args, this);
+        if (args.options.dock.name) {
+            this.connectWindowToDock(name, args.options.dock.name);
+        }
+    }
+
+    connectWindowToDock(windowName, dockName) {
+        this.docks[dockName].addWindow(this.windows[windowName]);
     }
 
     deleteWindow(name) {
@@ -105,6 +264,254 @@ class LWWManager {
             throw new Error("Trying to delete window with name " + name + ", it doesn't exist.");
 
         delete this.windows[name];
+    }
+}
+
+class Dock {
+    constructor(name, options, manager) {
+        this.manager = manager;
+        this.name = name;
+        this.options = options;
+        this.options.anchor = options.anchor;
+
+        // Window objs
+        this.windows = {};
+
+        this.DOM = {
+            container: null,
+            windows: {} // Window DOM
+        };
+
+        this.size = {};
+
+        this._init();
+    }
+
+    getWindowBounds(windowName) {
+        let numDocked = 0;
+        for (let win in this.windows) {
+            if (win === windowName) {
+                break;
+            }
+            if (this.windows[win].state.override !== 'minimize') {
+
+            } else {
+                numDocked = 0;
+            }
+        }
+
+        let offset = this.options.buttonLength * numDocked,
+            length = this.options.buttonLength;
+
+        let bounds = {};
+        if (this.options.anchor.flow === 'vertical') {
+            bounds.left = this.bounds.left;
+            bounds.right = this.bounds.right;
+            bounds.width = this.bounds.width;
+
+            if (this.options.anchor.y === 'top') {
+                // Flowing downwards
+                bounds.top = this.bounds.top + offset;
+                bounds.bottom = this.bounds.top + offset + length;
+            } else if (this.options.anchor.y === 'bottom') {
+                // Flowing upwards
+                bounds.bottom = this.bounds.bottom - offset;
+                bounds.top = this.bounds.bottom - offset - length;
+            } else throw new Error("Invalid anchor position for y");
+        } else if (this.options.anchor.flow === 'horizontal') {
+            bounds.top = this.bounds.top;
+            bounds.bottom = this.bounds.bottom;
+            bounds.height = this.bounds.height;
+
+            if (this.options.anchor.x === 'left') {
+                // Flowing right
+                bounds.left = this.bounds.left + offset;
+                bounds.right = this.bounds.left + offset + length;
+            } else if (this.options.anchor.x === 'right') {
+                // Flowing left
+                bounds.left = this.bounds.right - offset;
+                bounds.right = this.bounds.right - offset - length;
+
+            } else throw new Error("Invalid anchor position for x");
+
+        } else throw new Error("Invalid flow direction");
+
+        return bounds;
+    }
+
+    _init() {
+        this._setDefaults();
+        this._initDOM();
+    }
+
+    _setDefaults() {
+        if (!this.options.buttonLength) {
+            this.options.buttonLength = 100;
+        }
+
+        let anchor = this.options.anchor;
+        for (let maybeset0 of ['offsetY', 'offsetX'])
+            if (!anchor.hasOwnProperty(maybeset0))
+                anchor[maybeset0] = 0;
+    }
+
+    get flexClass() {
+        if (this.options.anchor.flow === 'vertical') {
+            if (this.options.anchor.y === 'top')
+                return 'downwards';
+            else if (this.options.anchor.y === 'bottom')
+                return 'upwards';
+            else throw new Error("Invalid y-anchor");
+        } else if (this.options.anchor.flow === 'horizontal') {
+            if (this.options.anchor.x === 'left')
+                return 'rightwards';
+            else if (this.options.anchor.x === 'right')
+                return 'leftwards';
+            else throw new Error("Invalid y-anchor");
+        } else throw new Error("Invalid flow");
+    }
+
+    _initDOM() {
+        this.DOM.container = document.createElement('div');
+        this.DOM.container.setAttribute('class', 'lww-dock-container ' + this.options.anchor.flow);
+
+        this.DOM.container.classList.add(this.flexClass);
+
+        document.body.appendChild(this.DOM.container);
+
+        this.anchorContainer();
+    }
+
+
+    notifyWindowStateDidChange(windowName) {
+        this.renderWindows();
+    }
+
+    anchorContainer() {
+        let style;
+
+        let anchor = this.options.anchor;
+        let x = anchor.x,
+            y = anchor.y;
+
+        let buttonHeight = this.options.buttonHeight;
+
+
+        if (this.options.anchor.flow === 'vertical') {
+            if (x === 'left' && y === 'top') {
+                style = `
+                width: ${buttonHeight};
+                top: ${anchor.offsetY};
+                left: ${anchor.offsetX};
+                `;
+            } else if (x === 'left' && y === 'bottom') {
+                style = `
+                width: ${buttonHeight};
+                bottom: ${anchor.offsetY};
+                left: ${anchor.offsetX};
+                `;
+            } else if (x === 'right' && y === 'top') {
+                style = `
+                width: ${buttonHeight};
+                top: ${anchor.offsetY};
+                right: ${anchor.offsetX};
+                `;
+            } else if (x === 'right' && y === 'bottom') {
+                style = `
+                width: ${buttonHeight};
+                bottom: ${anchor.offsetY};
+                right: ${anchor.offsetX};
+                `;
+            }
+        } else if (this.options.anchor.flow === 'horizontal') {
+            if (x === 'left' && y === 'top') {
+                style = `
+                height: ${buttonHeight};
+                top: ${anchor.offsetY};
+                left: ${anchor.offsetX};
+                `;
+            } else if (x === 'left' && y === 'bottom') {
+                style = `
+                height: ${buttonHeight};
+                bottom: ${anchor.offsetY};
+                left: ${anchor.offsetX};
+                `;
+            } else if (x === 'right' && y === 'top') {
+                style = `
+                height: ${buttonHeight};
+                top: ${anchor.offsetY};
+                right: ${anchor.offsetX};
+                `;
+            } else if (x === 'right' && y === 'bottom') {
+                style = `
+                height: ${buttonHeight};
+                bottom: ${anchor.offsetY};
+                right: ${anchor.offsetX};
+                `;
+            }
+        } else {
+            throw new Error("Invalid anchor configuration");
+        }
+
+        this.DOM.container.style = style;
+
+        getComputedStyle(this.DOM.container).width;
+
+
+
+        setTimeout(() => {
+            this.bounds = this.DOM.container.getBoundingClientRect();
+        }, 200);
+    }
+
+    renderWindows() {
+        let style;
+
+        let lengthKey = this.options.anchor.flow === 'vertical' ? 'height' : 'width';
+        for (let win in this.windows) {
+            let theWindow = this.windows[win];
+            if (theWindow.state.override === 'minimize') { // Render
+                style = `
+                    ${lengthKey}: ${this.options.buttonLength};
+                    display: flex
+                `;
+            } else {
+                style = 'display: none';
+            }
+
+            this.DOM.windows[win].style = style;
+
+        }
+    }
+
+    addWindow(theWindow) {
+        this.windows[theWindow.name] = theWindow;
+        this._initWindowDOM(theWindow);
+        this.renderWindows();
+    }
+
+    _initWindowDOM(theWindow) {
+        // Render only if docked
+        let div = document.createElement('div');
+        this.DOM.windows[theWindow.name] = div;
+
+        let icon = document.createElement('div');
+        let label = document.createElement('div');
+
+        icon.setAttribute('class', 'lww-dock-icon');
+        label.setAttribute('class', 'lww-dock-label')
+
+        label.innerHTML = theWindow.options.title;
+
+        div.setAttribute('class', 'lww-docked-window ' + this.options.anchor.flow)
+
+        div.appendChild(icon);
+        div.appendChild(label);
+
+        div.onclick = (e) => {
+            this.windows[theWindow.name].toggleState('minimize');
+        }
+        this.DOM.container.appendChild(div);
     }
 }
 
@@ -315,19 +722,26 @@ class LWW {
             headerLabel = document.createElement('div'),
             headerButtonsContainer = document.createElement('div'),
             buttons = {
-                close: document.createElement('div'),
+                /* close: document.createElement('div'),
                 maximize: document.createElement('div'),
                 minimize: document.createElement('div'),
-                collapse: document.createElement('div'),
+                collapse: document.createElement('div'), */
             };
 
         header.appendChild(headerLabel);
         header.appendChild(headerButtonsContainer);
 
-        headerButtonsContainer.appendChild(buttons.minimize);
-        headerButtonsContainer.appendChild(buttons.collapse);
-        headerButtonsContainer.appendChild(buttons.maximize);
-        headerButtonsContainer.appendChild(buttons.close);
+        for (let button of this.options.buttons) {
+            let div = document.createElement('div');
+            div.setAttribute('class', `lww-header-button lww-header-${button}`);
+            headerButtonsContainer.appendChild(div);
+            buttons[button] = div;
+        }
+        /* 
+                headerButtonsContainer.appendChild(buttons.minimize);
+                headerButtonsContainer.appendChild(buttons.collapse);
+                headerButtonsContainer.appendChild(buttons.maximize);
+                headerButtonsContainer.appendChild(buttons.close); */
 
         let content = document.createElement('div');
 
@@ -337,10 +751,10 @@ class LWW {
         headerButtonsContainer.setAttribute('class', 'lww-header-buttons-container');
         content.setAttribute('class', 'lww-content');
 
-        for (let btn in buttons) {
-            buttons[btn].setAttribute('class', `lww-header-button lww-header-${btn}`);
-        }
-
+        /*         for (let btn in buttons) {
+                    buttons[btn].setAttribute('class', `lww-header-button lww-header-${btn}`);
+                }
+         */
         container.appendChild(header);
         container.appendChild(content);
 
@@ -363,22 +777,31 @@ class LWW {
         this.DOM.headerLabel.innerHTML = this.options.title;
     }
 
+    enableAnimate() {
+        this.DOM.container.classList.add('lww-animated');
+    }
+
+    disableAnimate() {
+        this.DOM.container.classList.remove('lww-animated');
+    }
+
     // Apply current sizing state to DOM
-    resizeRelocateDOMContainer() {
+    resizeRelocateDOMContainer(forceAnimate) {
         window.requestAnimationFrame(() => {
 
             let newStyle;
 
+            this.enableAnimate();
             if (this.state.override)
                 switch (this.state.override) {
-                    case 'maximized':
+                    case 'maximize':
                         if (!this.options.bounds.max) {
                             throw new Error("Maximizing requires max bounds, specify them in options");
                         }
 
                         newStyle = `
-                        left: ${this.options.state.location[0]};
-                        top: ${this.options.state.location[1]};
+                        left: ${this.state.location[0]};
+                        top: ${this.state.location[1]};
                         width: ${this.options.bounds.max[0]};
                         height: ${this.options.bounds.max[1]};
                     `;
@@ -389,40 +812,77 @@ class LWW {
                         }
 
                         newStyle = `
-                        left: ${this.options.state.location[0]};
-                        top: ${this.options.state.location[1]};
+                        left: ${this.state.location[0]};
+                        top: ${this.state.location[1]};
                         width: ${this.options.bounds.min[0]};
                         height: ${this.options.bounds.min[1]};
                     `;
                         break;
-                    case 'docked':
+                    case 'minimize':
                         if (!this.options.dock) {
                             throw new Error("Docking a window requires it to be connected to a dock");
                         }
 
                         let dock = this.dock;
+                        let btnBounds = dock.getWindowBounds(this.name);
 
                         // TODO move it to the dock and minimize it
+                        newStyle = `
+                        left: ${btnBounds.left};
+                        top: ${btnBounds.top};
+                        width: ${btnBounds.width};
+                        height: ${btnBounds.height};
+                        z-index: -1;
+                        opacity: 0;
+                    `;
+
+                        /* setTimeout(() => {
+                            this.toggleState('minimize');
+                        }, 2000); */
+                        break;
+                    case 'collapse':
+                        newStyle = `
+                        left: ${this.x0};
+                        top: ${this.y0};
+                        width: ${this.options.bounds.min[0]};
+                        height: ${this.options.bounds.headerHeight};
+                        `;
+                        break;
+                    default:
+
+                        if (!forceAnimate)
+                            this.disableAnimate();
+
                         newStyle = `
                         left: ${this.x0};
                         top: ${this.y0};
                         width: ${this.width};
                         height: ${this.height};
-                    `;
+                        opacity: 1;
+                        z-index: 500
+                        `;
                         break;
                 }
 
-            if (!newStyle) {
-                newStyle = `
-                        left: ${this.x0};
-                        top: ${this.y0};
-                        width: ${this.width};
-                        height: ${this.height};
-                        `;
-            }
-
             this.DOM.container.style = newStyle;
+            setTimeout(() => this.disableAnimate(), 200);
         });
+    }
+
+    toggleState(state, forceAnimate) {
+        if (this.state.override === state) {
+            this.state.override = 'none';
+            forceAnimate = true;
+        } else
+            this.state.override = state;
+
+        if (state === 'minimize') {
+            this.dock.notifyWindowStateDidChange(this.name);
+        }
+
+
+        this.resizeRelocateDOMContainer(forceAnimate);
+        this._updateContainerHandles();
     }
 
     _resizeDOMContent() {
@@ -470,7 +930,7 @@ class LWW {
                 case 'bottom-right':
                     return [handles.right[1] - x, handles.bottom[1] - y]
                 case 'header':
-                    return [handles.left[0] - x, handles.header[0] - y];
+                    return [handles.left[0] - x, handles.top[0] - y];
                 case 'top':
                     return [0, handles.top[0] - y];
                 case 'top-left':
@@ -482,15 +942,13 @@ class LWW {
             }
         }
 
-        let startDrag = (x, y) => {
 
+        let startDrag = (x, y) => {
             this.mouse.offset = inferOffset(x, y);
 
             this.mouse.isDragging = true;
             this.mouse.moveCallback = this.inferMousedownAction();
         }
-
-        let isDrag = () => this.mouse.isDragging;
 
         let endDrag = (x, y) => {
             this.mouse.isDragging = false;
@@ -535,10 +993,11 @@ class LWW {
         this.DOM.header.addEventListener('mousemove', (e) => {
             console.log("mm header");
 
-            this.mouse.loc = this.inferMouseLocation(e.x, e.y);
-            this._updateCursor();
 
             if (!this.mouse.isDragging) {
+                this.mouse.loc = this.inferMouseLocation(e.x, e.y);
+                this._updateCursor();
+
                 e.stopImmediatePropagation();
                 e.preventDefault();
                 return false;
@@ -548,10 +1007,10 @@ class LWW {
 
         this.DOM.header.addEventListener('mouseenter', (e) => {
             console.log("mm header");
-            this.mouse.loc = this.inferMouseLocation(e.x, e.y);
-            this._updateCursor();
 
             if (!this.mouse.isDragging) {
+                this.mouse.loc = this.inferMouseLocation(e.x, e.y);
+                this._updateCursor();
                 e.stopImmediatePropagation();
                 e.preventDefault();
                 return false;
@@ -562,9 +1021,9 @@ class LWW {
         this.DOM.header.addEventListener('mouseleave', (e) => {
             console.log("mm header");
             this.mouse.loc = null;
-            this._updateCursor();
 
             if (!this.mouse.isDragging) {
+                this._updateCursor();
                 e.stopImmediatePropagation();
                 e.preventDefault();
                 return false;
@@ -574,8 +1033,8 @@ class LWW {
 
         this.DOM.header.addEventListener('mousedown', (e) => {
             this.mouse.isDragging = true;
-            startDrag(e.x, e.y);
             this._updateCursor();
+            startDrag(e.x, e.y);
         });
 
 
@@ -624,6 +1083,51 @@ class LWW {
             // End drag or resize
             endDrag();
         });
+
+        for (let btn in this.DOM.buttons) {
+            let button = this.DOM.buttons[btn];
+
+            button.addEventListener('mouseenter', (e) => {
+                this.mouse.loc = 'button';
+                this._updateCursor();
+            });
+            button.addEventListener('mouseleave', (e) => {
+                this.mouse.loc = 'button';
+                this._updateCursor();
+
+            });
+            button.addEventListener('mousemove', (e) => {
+                if (!this.mouse.isDragging) {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    return false;
+                }
+            })
+            button.addEventListener('click', (e) => {
+                this.click(btn);
+            });
+        }
+    }
+
+    click(button) {
+        switch (button) {
+            case 'maximize':
+                this.toggleState('maximize');
+                break;
+            case 'minimize':
+                this.toggleState('minimize');
+                break;
+            case 'collapse':
+                this.toggleState('collapse');
+                break;
+            case 'close':
+                this.close();
+                break;
+        }
+    }
+
+    close() {
+
     }
 
     _updateCursor() {
