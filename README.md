@@ -29,3 +29,6 @@ Inspired by on drag-resize-snap by arctelix ( https://github.com/arctelix/drag-r
 #### Usage:
 
 TODO, see demo/ to see how it is used.
+
+#### Contibuting:
+ Contributions are very welcome, the source code is (hopefully) pretty straight forward.
