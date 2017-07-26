@@ -108,6 +108,10 @@
     background-image: url('./icons/chev-down.png');
 }
 
+.lww-header-minsize {
+    background-image: url('./icons/minsize.png');
+}
+
 .lww-dock-container {
     position: fixed;
     /* DEBUG */

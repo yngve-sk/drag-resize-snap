@@ -1,175 +1,72 @@
-let LWWManager = require('../src/lww-v2');
+let LWWManager;
+if (typeof require === 'function')
+    LWWManager = require('../src/lww');
+else
+    LWWManager = window.LWWManager;
 
 let BTN_HEIGHT = 40,
     BTN_LENGTH = 60,
 
     SIZE = [350, 250],
-    LOC = [25, 25];
+    LOC = [25, 25],
 
+    BUTTONS = ['collapse', 'minimize', 'minsize', 'maximize'],
+    NUM_WINDOWS = 5,
 
-let DOCKS = {
-    leftDown: {
-        anchor: {
-            x: 'left',
-            y: 'top',
-            offsetY: '10%',
-            flow: 'vertical'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
-    leftUp: {
-        anchor: {
-            x: 'left',
-            y: 'bottom',
-            offsetY: '10%',
-            flow: 'vertical'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
-    rightDown: {
-        anchor: {
-            x: 'right',
-            y: 'top',
-            offsetY: '10%',
-            flow: 'vertical'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
-    rightUp: {
-        anchor: {
-            x: 'right',
-            y: 'bottom',
-            offsetY: '10%',
-            flow: 'vertical'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
+    DOCK_OFFSET = '5%';
 
-    topRight: {
-        anchor: {
-            x: 'left',
-            y: 'top',
-            offsetX: '10%',
-            flow: 'horizontal'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
-    topLeft: {
-        anchor: {
-            x: 'right',
-            y: 'top',
-            offsetX: '10%',
-            flow: 'horizontal'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
-    bottomRight: {
-        anchor: {
-            x: 'left',
-            y: 'bottom',
-            offsetX: '10%',
-            flow: 'horizontal'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
-    bottomLeft: {
-        anchor: {
-            x: 'right',
-            y: 'bottom',
-            offsetX: '10%',
-            flow: 'horizontal'
-        },
-        buttonHeight: BTN_HEIGHT,
-        buttonLength: BTN_LENGTH
-    },
-};
+let DOCKS = {};
 
-let WINDOWS = [{
-    options: {
-        title: 'Win1',
-        minimizable: true,
-        maximizable: true,
-        collapsible: true,
-
-        buttons: ['collapse', 'minimize', 'maximize'],
-
-        bounds: {
-            min: [230, 100],
-            max: [700, 700],
-            headerHeight: 30,
-        },
-
-        resizeMargin: 8,
-        icon: undefined,
-        dock: {
-            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
+for (let flow of ['vertical', 'horizontal'])
+    for (let xAnchor of ['left', 'right'])
+        for (let yAnchor of ['top', 'bottom']) {
+            let name = flow.substr(0, 1) + '-' + xAnchor.substr(0, 1) + '-' + yAnchor.substr(0, 1);
+            name = name.toUpperCase();
+            DOCKS[name] = {
+                anchor: {
+                    x: xAnchor,
+                    y: yAnchor,
+                    offset: DOCK_OFFSET,
+                    flow: flow
+                },
+                buttonHeight: BTN_HEIGHT,
+                buttonLength: BTN_LENGTH,
+                hideLabels: true,
+                showIcons: true
+            };
         }
-    },
-    state: {
-        override: 'none',
-        size: SIZE,
-        location: LOC
-    }
-}, {
-    options: {
-        title: 'Win2',
-        minimizable: true,
-        maximizable: true,
-        collapsible: true,
 
-        buttons: ['collapse', 'minimize', 'maximize'],
+let WINDOWS = [];
 
-        bounds: {
-            min: [230, 100],
-            max: [700, 700],
-            headerHeight: 30,
+for (let i = 0; i < NUM_WINDOWS; i++) {
+    WINDOWS.push({
+        options: {
+            title: 'Win' + i + '..',
+            minimizable: true,
+            maximizable: true,
+            collapsible: true,
+
+            buttons: BUTTONS.slice(0),
+
+            bounds: {
+                min: [230, 100],
+                max: [700, 700],
+                headerHeight: 30,
+            },
+
+            resizeMargin: 8,
+            icon: undefined,
+            dock: {
+                //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
+            }
         },
-
-        resizeMargin: 8,
-        icon: undefined,
-        dock: {
-            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
+        state: {
+            override: 'none',
+            size: SIZE.slice(0),
+            location: LOC.slice(0).slice(0)
         }
-    },
-    state: {
-        override: 'none',
-        size: SIZE,
-        location: LOC
-    }
-}, {
-    options: {
-        title: 'Win3',
-        minimizable: true,
-        maximizable: true,
-        collapsible: true,
-
-        buttons: ['collapse', 'minimize', 'maximize'],
-
-        bounds: {
-            min: [230, 100],
-            max: [700, 700],
-            headerHeight: 30,
-        },
-
-        resizeMargin: 8,
-        icon: undefined,
-        dock: {
-            //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
-        }
-    },
-    state: {
-        override: 'none',
-        size: SIZE,
-        location: LOC
-    }
-}];
+    })
+}
 
 let count = 0;
 

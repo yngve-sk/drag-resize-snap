@@ -1,83 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-let LOC_TO_MOUSE_STYLE = {
-    'bottom-left': 'nesw-resize',
-    'bottom-right': 'nwse-resize',
-    'top-right': 'nesw-resize',
-    'top-left': 'nwse-resize',
-    'left': 'ew-resize',
-    'right': 'ew-resize',
-    'bottom': 'ns-resize',
-    'header': 'move',
-    'top': 'ns-resize',
-    'content': 'default',
-    'button': 'default'
-};
-
-/**
- *
- * @version 0.1
- * @author Yngve S. Kristiansen
- * @author original source 1: Simplex Studio, LTD &
- * @author original source (actual original source): http://codepen.io/zz85/post/resizing-moving-snapping-windows-with-js-css, https://github.com/zz85
- *
- * @licence The MIT License (MIT)
- * @Copyright Copyright © 2015 Simplex Studio, LTD
- * @Copyright Copyright © 2015 https://github.com/zz85
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the “Software”), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions
- * of the Software.
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
- * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
- * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
-
-/*
-    Manages...
-    * the dock 
-    * Z-indexing
-    * spawning / despawning
-    * positioning of the windows (Powered by popper.js)
-*/
-class LWWManager {
-    constructor() {
-        this.cache = {
-
-        };
-
-        this.docks = {};
-        this.windows = {};
-        this.ghost = undefined; // To transition animations etc
-    }
-
-    // Creates a dock that windows can be minimized to / maximized from
-    createDock(name, args) {
-        this.docks[name] = new Dock(name, args, this);
-    }
-
-    addWindow(name, args) {
-        this.windows[name] = new LWW(name, args, this);
-        if (args.options.dock.name) {
-            this.connectWindowToDock(name, args.options.dock.name);
-        }
-    }
-
-    connectWindowToDock(windowName, dockName) {
-        this.docks[dockName].addWindow(this.windows[windowName]);
-    }
-
-    deleteWindow(name) {
-        if (!this.windows.hasOwnProperty(name))
-            throw new Error("Trying to delete window with name " + name + ", it doesn't exist.");
-
-        delete this.windows[name];
-    }
-}
-
 class Dock {
     constructor(name, options, manager) {
         this.manager = manager;
@@ -161,9 +82,8 @@ class Dock {
         }
 
         let anchor = this.options.anchor;
-        for (let maybeset0 of ['offsetY', 'offsetX'])
-            if (!anchor.hasOwnProperty(maybeset0))
-                anchor[maybeset0] = 0;
+        if (!anchor.hasOwnProperty('offset'))
+            anchor['offset'] = 0;
     }
 
     get flexClass() {
@@ -212,52 +132,52 @@ class Dock {
             if (x === 'left' && y === 'top') {
                 style = `
                 width: ${buttonHeight};
-                top: ${anchor.offsetY};
-                left: ${anchor.offsetX};
+                top: ${anchor.offset};
+                left: 0;
                 `;
             } else if (x === 'left' && y === 'bottom') {
                 style = `
                 width: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                left: ${anchor.offsetX};
+                bottom: ${anchor.offset};
+                left: 0;
                 `;
             } else if (x === 'right' && y === 'top') {
                 style = `
                 width: ${buttonHeight};
-                top: ${anchor.offsetY};
-                right: ${anchor.offsetX};
+                top: ${anchor.offset};
+                right: 0;
                 `;
             } else if (x === 'right' && y === 'bottom') {
                 style = `
                 width: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                right: ${anchor.offsetX};
+                bottom: ${anchor.offset};
+                right: 0;
                 `;
             }
         } else if (this.options.anchor.flow === 'horizontal') {
             if (x === 'left' && y === 'top') {
                 style = `
                 height: ${buttonHeight};
-                top: ${anchor.offsetY};
-                left: ${anchor.offsetX};
+                top: 0;
+                left: ${anchor.offset};
                 `;
             } else if (x === 'left' && y === 'bottom') {
                 style = `
                 height: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                left: ${anchor.offsetX};
+                bottom: 0;
+                left: ${anchor.offset};
                 `;
             } else if (x === 'right' && y === 'top') {
                 style = `
                 height: ${buttonHeight};
-                top: ${anchor.offsetY};
-                right: ${anchor.offsetX};
+                top: 0;
+                right: ${anchor.offset};
                 `;
             } else if (x === 'right' && y === 'bottom') {
                 style = `
                 height: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                right: ${anchor.offsetX};
+                bottom: 0;
+                right: ${anchor.offset};
                 `;
             }
         } else {
@@ -325,6 +245,92 @@ class Dock {
         this.DOM.container.appendChild(div);
     }
 }
+
+module.exports = Dock;
+},{}],2:[function(require,module,exports){
+let Dock = require('./lww-dock');
+let LWW = require('./lww-window');
+
+/**
+ *
+ * @version 0.1
+ * @author Yngve S. Kristiansen
+ * @author original source 1: Simplex Studio, LTD &
+ * @author original source (actual original source): http://codepen.io/zz85/post/resizing-moving-snapping-windows-with-js-css, https://github.com/zz85
+ *
+ * @licence The MIT License (MIT)
+ * @Copyright Copyright © 2015 Simplex Studio, LTD
+ * @Copyright Copyright © 2015 https://github.com/zz85
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the “Software”), to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions
+ * of the Software.
+ * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+ * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+ * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+/*
+    Manages...
+    * the dock 
+    * Z-indexing
+    * spawning / despawning
+    * positioning of the windows (Powered by popper.js)
+*/
+class LWWManager {
+    constructor() {
+        this.cache = {
+
+        };
+
+        this.docks = {};
+        this.windows = {};
+        //        this.ghost = undefined; // To transition animations etc
+    }
+
+    // Creates a dock that windows can be minimized to / maximized from
+    createDock(name, args) {
+        this.docks[name] = new Dock(name, args, this);
+    }
+
+    addWindow(name, args) {
+        this.windows[name] = new LWW(name, args, this);
+        if (args.options.dock.name) {
+            this.connectWindowToDock(name, args.options.dock.name);
+        }
+    }
+
+    connectWindowToDock(windowName, dockName) {
+        this.docks[dockName].addWindow(this.windows[windowName]);
+    }
+
+    deleteWindow(name) {
+        if (!this.windows.hasOwnProperty(name))
+            throw new Error("Trying to delete window with name " + name + ", it doesn't exist.");
+
+        delete this.windows[name];
+    }
+}
+
+module.exports = LWWManager;
+},{"./lww-dock":1,"./lww-window":3}],3:[function(require,module,exports){
+let LOC_TO_MOUSE_STYLE = {
+    'bottom-left': 'nesw-resize',
+    'bottom-right': 'nwse-resize',
+    'top-right': 'nesw-resize',
+    'top-left': 'nwse-resize',
+    'left': 'ew-resize',
+    'right': 'ew-resize',
+    'bottom': 'ns-resize',
+    'header': 'move',
+    'top': 'ns-resize',
+    'content': 'default',
+    'button': 'default'
+};
 
 class LWW {
     /*
@@ -532,12 +538,7 @@ class LWW {
         let header = document.createElement('div'),
             headerLabel = document.createElement('div'),
             headerButtonsContainer = document.createElement('div'),
-            buttons = {
-                /* close: document.createElement('div'),
-                maximize: document.createElement('div'),
-                minimize: document.createElement('div'),
-                collapse: document.createElement('div'), */
-            };
+            buttons = {};
 
         header.appendChild(headerLabel);
         header.appendChild(headerButtonsContainer);
@@ -548,11 +549,6 @@ class LWW {
             headerButtonsContainer.appendChild(div);
             buttons[button] = div;
         }
-        /* 
-                headerButtonsContainer.appendChild(buttons.minimize);
-                headerButtonsContainer.appendChild(buttons.collapse);
-                headerButtonsContainer.appendChild(buttons.maximize);
-                headerButtonsContainer.appendChild(buttons.close); */
 
         let content = document.createElement('div');
 
@@ -562,10 +558,6 @@ class LWW {
         headerButtonsContainer.setAttribute('class', 'lww-header-buttons-container');
         content.setAttribute('class', 'lww-content');
 
-        /*         for (let btn in buttons) {
-                    buttons[btn].setAttribute('class', `lww-header-button lww-header-${btn}`);
-                }
-         */
         container.appendChild(header);
         container.appendChild(content);
 
@@ -597,12 +589,14 @@ class LWW {
     }
 
     // Apply current sizing state to DOM
-    resizeRelocateDOMContainer(forceAnimate) {
+    resizeRelocateDOMContainer(animate) {
         window.requestAnimationFrame(() => {
 
             let newStyle;
 
-            this.enableAnimate();
+            if (animate !== false)
+                this.enableAnimate();
+
             if (this.state.override)
                 switch (this.state.override) {
                     case 'maximize':
@@ -617,7 +611,7 @@ class LWW {
                         height: ${this.options.bounds.max[1]};
                     `;
                         break;
-                    case 'minsized':
+                    case 'minsize':
                         if (!this.options.bounds.min) {
                             throw new Error("Minsizing requires min bounds, specify them in options");
                         }
@@ -661,8 +655,8 @@ class LWW {
                         break;
                     default:
 
-                        if (!forceAnimate)
-                            this.disableAnimate();
+                        /* if (animate === false)
+                            this.disableAnimate(); */
 
                         newStyle = `
                         left: ${this.x0};
@@ -680,19 +674,20 @@ class LWW {
         });
     }
 
-    toggleState(state, forceAnimate) {
+    toggleState(state, animate) {
         if (this.state.override === state) {
             this.state.override = 'none';
-            forceAnimate = true;
-        } else
+            animate = true;
+        } else {
             this.state.override = state;
+        }
 
         if (state === 'minimize') {
             this.dock.notifyWindowStateDidChange(this.name);
         }
 
 
-        this.resizeRelocateDOMContainer(forceAnimate);
+        this.resizeRelocateDOMContainer(animate);
         this._updateContainerHandles();
     }
 
@@ -756,6 +751,16 @@ class LWW {
 
         let startDrag = (x, y) => {
             this.mouse.offset = inferOffset(x, y);
+
+            if (this.mouse.loc !== 'header' && this.mouse.loc !== 'none') { // Assume resize
+                if (this.state.override === 'minsized') {
+                    this.state.size = this.options.bounds.min.slice(0);
+                } else if (this.state.override === 'maximized') {
+                    this.state.size = this.options.bounds.max.slice(0);
+                }
+
+                this.state.override = 'none';
+            }
 
             this.mouse.isDragging = true;
             this.mouse.moveCallback = this.inferMousedownAction();
@@ -873,7 +878,7 @@ class LWW {
 
         this.DOM.container.addEventListener('mouseleave', (e) => {
             if (!this.mouse.isDragging) {
-                this.DOM.container.style.cursor = 'default';
+                document.body.style.cursor = 'default';
             }
             console.log("mm container");
         });
@@ -913,23 +918,46 @@ class LWW {
                     e.preventDefault();
                     return false;
                 }
-            })
+            });
             button.addEventListener('click', (e) => {
+                RestoreOverride();
                 this.click(btn);
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            });
+            button.addEventListener('mousedown', (e) => {
+                //RestoreOverride();
+                this.click(btn);
+                e.stopImmediatePropagation();
+                e.preventDefault();
             });
         }
     }
 
     click(button) {
+
+        let inheritOverrideSizing = () => {
+            if (this.state.override === 'maximize')
+                this.state.size = this.options.bounds.max.slice();
+
+            if (this.state.override === 'minsize')
+                this.state.size = this.options.bounds.min.slice();
+        }
+
         switch (button) {
             case 'maximize':
-                this.toggleState('maximize');
+                this.toggleState('maximize', true);
+                break;
+            case 'minsize':
+                this.toggleState('minsize', true);
                 break;
             case 'minimize':
-                this.toggleState('minimize');
+                inheritOverrideSizing();
+                this.toggleState('minimize', true);
                 break;
             case 'collapse':
-                this.toggleState('collapse');
+                inheritOverrideSizing();
+                this.toggleState('collapse', true);
                 break;
             case 'close':
                 this.close();
@@ -942,7 +970,8 @@ class LWW {
     }
 
     _updateCursor() {
-        this.DOM.container.style.cursor = LOC_TO_MOUSE_STYLE[this.mouse.loc];
+        //this.DOM.container.style.cursor = LOC_TO_MOUSE_STYLE[this.mouse.loc];
+        document.body.style.cursor = LOC_TO_MOUSE_STYLE[this.mouse.loc];
     }
 
     _updateContainerHandles() {
@@ -1075,5 +1104,13 @@ class LWW {
 
 }
 
-module.exports = new LWWManager();
-},{}]},{},[1]);
+module.exports = LWW;
+},{}],4:[function(require,module,exports){
+let LWWManager = require('./lww-manager');
+
+let theManager = new LWWManager();
+
+window.LWWManager = theManager;
+
+module.exports = theManager;
+},{"./lww-manager":2}]},{},[4]);

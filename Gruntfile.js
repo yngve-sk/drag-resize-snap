@@ -35,7 +35,7 @@ module.exports = function (grunt) {
         browserify: {
             dist: {
                 files: {
-                    'dist/lww.js': ['src/lww-v2.js'],
+                    'dist/lww.js': ['src/lww.js'],
                 }
             },
             demo2: {

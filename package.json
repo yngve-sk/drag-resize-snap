@@ -80,7 +80,7 @@
     "popup"
   ],
   "license": "ISC",
-  "main": "src/lww-v2.js",
+  "main": "dist/lww.js",
   "maintainers": [
     {
       "name": "ysk92",
@@ -98,5 +98,5 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "0.1.1"
+  "version": "0.2.0"
 }

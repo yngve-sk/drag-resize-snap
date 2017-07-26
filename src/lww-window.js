@@ -12,319 +12,6 @@ let LOC_TO_MOUSE_STYLE = {
     'button': 'default'
 };
 
-/**
- *
- * @version 0.1
- * @author Yngve S. Kristiansen
- * @author original source 1: Simplex Studio, LTD &
- * @author original source (actual original source): http://codepen.io/zz85/post/resizing-moving-snapping-windows-with-js-css, https://github.com/zz85
- *
- * @licence The MIT License (MIT)
- * @Copyright Copyright © 2015 Simplex Studio, LTD
- * @Copyright Copyright © 2015 https://github.com/zz85
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
- * documentation files (the “Software”), to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
- * The above copyright notice and this permission notice shall be included in all copies or substantial portions
- * of the Software.
- * THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
- * TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
- * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
- */
-
-/*
-    Manages...
-    * the dock 
-    * Z-indexing
-    * spawning / despawning
-    * positioning of the windows (Powered by popper.js)
-*/
-class LWWManager {
-    constructor() {
-        this.cache = {
-
-        };
-
-        this.docks = {};
-        this.windows = {};
-        this.ghost = undefined; // To transition animations etc
-    }
-
-    // Creates a dock that windows can be minimized to / maximized from
-    createDock(name, args) {
-        this.docks[name] = new Dock(name, args, this);
-    }
-
-    addWindow(name, args) {
-        this.windows[name] = new LWW(name, args, this);
-        if (args.options.dock.name) {
-            this.connectWindowToDock(name, args.options.dock.name);
-        }
-    }
-
-    connectWindowToDock(windowName, dockName) {
-        this.docks[dockName].addWindow(this.windows[windowName]);
-    }
-
-    deleteWindow(name) {
-        if (!this.windows.hasOwnProperty(name))
-            throw new Error("Trying to delete window with name " + name + ", it doesn't exist.");
-
-        delete this.windows[name];
-    }
-}
-
-class Dock {
-    constructor(name, options, manager) {
-        this.manager = manager;
-        this.name = name;
-        this.options = options;
-        this.options.anchor = options.anchor;
-
-        // Window objs
-        this.windows = {};
-
-        this.DOM = {
-            container: null,
-            windows: {} // Window DOM
-        };
-
-        this.size = {};
-
-        this._init();
-    }
-
-    getWindowBounds(windowName) {
-        let numDocked = 0;
-        for (let win in this.windows) {
-            if (win === windowName) {
-                break;
-            }
-            if (this.windows[win].state.override !== 'minimize') {
-
-            } else {
-                numDocked = 0;
-            }
-        }
-
-        let offset = this.options.buttonLength * numDocked,
-            length = this.options.buttonLength;
-
-        let bounds = {};
-        if (this.options.anchor.flow === 'vertical') {
-            bounds.left = this.bounds.left;
-            bounds.right = this.bounds.right;
-            bounds.width = this.bounds.width;
-
-            if (this.options.anchor.y === 'top') {
-                // Flowing downwards
-                bounds.top = this.bounds.top + offset;
-                bounds.bottom = this.bounds.top + offset + length;
-            } else if (this.options.anchor.y === 'bottom') {
-                // Flowing upwards
-                bounds.bottom = this.bounds.bottom - offset;
-                bounds.top = this.bounds.bottom - offset - length;
-            } else throw new Error("Invalid anchor position for y");
-        } else if (this.options.anchor.flow === 'horizontal') {
-            bounds.top = this.bounds.top;
-            bounds.bottom = this.bounds.bottom;
-            bounds.height = this.bounds.height;
-
-            if (this.options.anchor.x === 'left') {
-                // Flowing right
-                bounds.left = this.bounds.left + offset;
-                bounds.right = this.bounds.left + offset + length;
-            } else if (this.options.anchor.x === 'right') {
-                // Flowing left
-                bounds.left = this.bounds.right - offset;
-                bounds.right = this.bounds.right - offset - length;
-
-            } else throw new Error("Invalid anchor position for x");
-
-        } else throw new Error("Invalid flow direction");
-
-        return bounds;
-    }
-
-    _init() {
-        this._setDefaults();
-        this._initDOM();
-    }
-
-    _setDefaults() {
-        if (!this.options.buttonLength) {
-            this.options.buttonLength = 100;
-        }
-
-        let anchor = this.options.anchor;
-        for (let maybeset0 of ['offsetY', 'offsetX'])
-            if (!anchor.hasOwnProperty(maybeset0))
-                anchor[maybeset0] = 0;
-    }
-
-    get flexClass() {
-        if (this.options.anchor.flow === 'vertical') {
-            if (this.options.anchor.y === 'top')
-                return 'downwards';
-            else if (this.options.anchor.y === 'bottom')
-                return 'upwards';
-            else throw new Error("Invalid y-anchor");
-        } else if (this.options.anchor.flow === 'horizontal') {
-            if (this.options.anchor.x === 'left')
-                return 'rightwards';
-            else if (this.options.anchor.x === 'right')
-                return 'leftwards';
-            else throw new Error("Invalid y-anchor");
-        } else throw new Error("Invalid flow");
-    }
-
-    _initDOM() {
-        this.DOM.container = document.createElement('div');
-        this.DOM.container.setAttribute('class', 'lww-dock-container ' + this.options.anchor.flow);
-
-        this.DOM.container.classList.add(this.flexClass);
-
-        document.body.appendChild(this.DOM.container);
-
-        this.anchorContainer();
-    }
-
-
-    notifyWindowStateDidChange(windowName) {
-        this.renderWindows();
-    }
-
-    anchorContainer() {
-        let style;
-
-        let anchor = this.options.anchor;
-        let x = anchor.x,
-            y = anchor.y;
-
-        let buttonHeight = this.options.buttonHeight;
-
-
-        if (this.options.anchor.flow === 'vertical') {
-            if (x === 'left' && y === 'top') {
-                style = `
-                width: ${buttonHeight};
-                top: ${anchor.offsetY};
-                left: ${anchor.offsetX};
-                `;
-            } else if (x === 'left' && y === 'bottom') {
-                style = `
-                width: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                left: ${anchor.offsetX};
-                `;
-            } else if (x === 'right' && y === 'top') {
-                style = `
-                width: ${buttonHeight};
-                top: ${anchor.offsetY};
-                right: ${anchor.offsetX};
-                `;
-            } else if (x === 'right' && y === 'bottom') {
-                style = `
-                width: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                right: ${anchor.offsetX};
-                `;
-            }
-        } else if (this.options.anchor.flow === 'horizontal') {
-            if (x === 'left' && y === 'top') {
-                style = `
-                height: ${buttonHeight};
-                top: ${anchor.offsetY};
-                left: ${anchor.offsetX};
-                `;
-            } else if (x === 'left' && y === 'bottom') {
-                style = `
-                height: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                left: ${anchor.offsetX};
-                `;
-            } else if (x === 'right' && y === 'top') {
-                style = `
-                height: ${buttonHeight};
-                top: ${anchor.offsetY};
-                right: ${anchor.offsetX};
-                `;
-            } else if (x === 'right' && y === 'bottom') {
-                style = `
-                height: ${buttonHeight};
-                bottom: ${anchor.offsetY};
-                right: ${anchor.offsetX};
-                `;
-            }
-        } else {
-            throw new Error("Invalid anchor configuration");
-        }
-
-        this.DOM.container.style = style;
-
-        getComputedStyle(this.DOM.container).width;
-
-
-
-        setTimeout(() => {
-            this.bounds = this.DOM.container.getBoundingClientRect();
-        }, 200);
-    }
-
-    renderWindows() {
-        let style;
-
-        let lengthKey = this.options.anchor.flow === 'vertical' ? 'height' : 'width';
-        for (let win in this.windows) {
-            let theWindow = this.windows[win];
-            if (theWindow.state.override === 'minimize') { // Render
-                style = `
-                    ${lengthKey}: ${this.options.buttonLength};
-                    display: flex
-                `;
-            } else {
-                style = 'display: none';
-            }
-
-            this.DOM.windows[win].style = style;
-
-        }
-    }
-
-    addWindow(theWindow) {
-        this.windows[theWindow.name] = theWindow;
-        this._initWindowDOM(theWindow);
-        this.renderWindows();
-    }
-
-    _initWindowDOM(theWindow) {
-        // Render only if docked
-        let div = document.createElement('div');
-        this.DOM.windows[theWindow.name] = div;
-
-        let icon = document.createElement('div');
-        let label = document.createElement('div');
-
-        icon.setAttribute('class', 'lww-dock-icon');
-        label.setAttribute('class', 'lww-dock-label')
-
-        label.innerHTML = theWindow.options.title;
-
-        div.setAttribute('class', 'lww-docked-window ' + this.options.anchor.flow)
-
-        div.appendChild(icon);
-        div.appendChild(label);
-
-        div.onclick = (e) => {
-            this.windows[theWindow.name].toggleState('minimize');
-        }
-        this.DOM.container.appendChild(div);
-    }
-}
-
 class LWW {
     /*
         Full args:
@@ -531,12 +218,7 @@ class LWW {
         let header = document.createElement('div'),
             headerLabel = document.createElement('div'),
             headerButtonsContainer = document.createElement('div'),
-            buttons = {
-                /* close: document.createElement('div'),
-                maximize: document.createElement('div'),
-                minimize: document.createElement('div'),
-                collapse: document.createElement('div'), */
-            };
+            buttons = {};
 
         header.appendChild(headerLabel);
         header.appendChild(headerButtonsContainer);
@@ -547,11 +229,6 @@ class LWW {
             headerButtonsContainer.appendChild(div);
             buttons[button] = div;
         }
-        /* 
-                headerButtonsContainer.appendChild(buttons.minimize);
-                headerButtonsContainer.appendChild(buttons.collapse);
-                headerButtonsContainer.appendChild(buttons.maximize);
-                headerButtonsContainer.appendChild(buttons.close); */
 
         let content = document.createElement('div');
 
@@ -561,10 +238,6 @@ class LWW {
         headerButtonsContainer.setAttribute('class', 'lww-header-buttons-container');
         content.setAttribute('class', 'lww-content');
 
-        /*         for (let btn in buttons) {
-                    buttons[btn].setAttribute('class', `lww-header-button lww-header-${btn}`);
-                }
-         */
         container.appendChild(header);
         container.appendChild(content);
 
@@ -596,12 +269,14 @@ class LWW {
     }
 
     // Apply current sizing state to DOM
-    resizeRelocateDOMContainer(forceAnimate) {
+    resizeRelocateDOMContainer(animate) {
         window.requestAnimationFrame(() => {
 
             let newStyle;
 
-            this.enableAnimate();
+            if (animate !== false)
+                this.enableAnimate();
+
             if (this.state.override)
                 switch (this.state.override) {
                     case 'maximize':
@@ -616,7 +291,7 @@ class LWW {
                         height: ${this.options.bounds.max[1]};
                     `;
                         break;
-                    case 'minsized':
+                    case 'minsize':
                         if (!this.options.bounds.min) {
                             throw new Error("Minsizing requires min bounds, specify them in options");
                         }
@@ -660,8 +335,8 @@ class LWW {
                         break;
                     default:
 
-                        if (!forceAnimate)
-                            this.disableAnimate();
+                        /* if (animate === false)
+                            this.disableAnimate(); */
 
                         newStyle = `
                         left: ${this.x0};
@@ -679,19 +354,20 @@ class LWW {
         });
     }
 
-    toggleState(state, forceAnimate) {
+    toggleState(state, animate) {
         if (this.state.override === state) {
             this.state.override = 'none';
-            forceAnimate = true;
-        } else
+            animate = true;
+        } else {
             this.state.override = state;
+        }
 
         if (state === 'minimize') {
             this.dock.notifyWindowStateDidChange(this.name);
         }
 
 
-        this.resizeRelocateDOMContainer(forceAnimate);
+        this.resizeRelocateDOMContainer(animate);
         this._updateContainerHandles();
     }
 
@@ -755,6 +431,16 @@ class LWW {
 
         let startDrag = (x, y) => {
             this.mouse.offset = inferOffset(x, y);
+
+            if (this.mouse.loc !== 'header' && this.mouse.loc !== 'none') { // Assume resize
+                if (this.state.override === 'minsized') {
+                    this.state.size = this.options.bounds.min.slice(0);
+                } else if (this.state.override === 'maximized') {
+                    this.state.size = this.options.bounds.max.slice(0);
+                }
+
+                this.state.override = 'none';
+            }
 
             this.mouse.isDragging = true;
             this.mouse.moveCallback = this.inferMousedownAction();
@@ -872,7 +558,7 @@ class LWW {
 
         this.DOM.container.addEventListener('mouseleave', (e) => {
             if (!this.mouse.isDragging) {
-                this.DOM.container.style.cursor = 'default';
+                document.body.style.cursor = 'default';
             }
             console.log("mm container");
         });
@@ -912,23 +598,46 @@ class LWW {
                     e.preventDefault();
                     return false;
                 }
-            })
+            });
             button.addEventListener('click', (e) => {
+                RestoreOverride();
                 this.click(btn);
+                e.stopImmediatePropagation();
+                e.preventDefault();
+            });
+            button.addEventListener('mousedown', (e) => {
+                //RestoreOverride();
+                this.click(btn);
+                e.stopImmediatePropagation();
+                e.preventDefault();
             });
         }
     }
 
     click(button) {
+
+        let inheritOverrideSizing = () => {
+            if (this.state.override === 'maximize')
+                this.state.size = this.options.bounds.max.slice();
+
+            if (this.state.override === 'minsize')
+                this.state.size = this.options.bounds.min.slice();
+        }
+
         switch (button) {
             case 'maximize':
-                this.toggleState('maximize');
+                this.toggleState('maximize', true);
+                break;
+            case 'minsize':
+                this.toggleState('minsize', true);
                 break;
             case 'minimize':
-                this.toggleState('minimize');
+                inheritOverrideSizing();
+                this.toggleState('minimize', true);
                 break;
             case 'collapse':
-                this.toggleState('collapse');
+                inheritOverrideSizing();
+                this.toggleState('collapse', true);
                 break;
             case 'close':
                 this.close();
@@ -941,7 +650,8 @@ class LWW {
     }
 
     _updateCursor() {
-        this.DOM.container.style.cursor = LOC_TO_MOUSE_STYLE[this.mouse.loc];
+        //this.DOM.container.style.cursor = LOC_TO_MOUSE_STYLE[this.mouse.loc];
+        document.body.style.cursor = LOC_TO_MOUSE_STYLE[this.mouse.loc];
     }
 
     _updateContainerHandles() {
@@ -1074,4 +784,4 @@ class LWW {
 
 }
 
-module.exports = new LWWManager();
+module.exports = LWW;
