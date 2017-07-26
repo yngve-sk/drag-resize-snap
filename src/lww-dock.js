@@ -18,6 +18,14 @@ class Dock {
         this._init();
     }
 
+    undockWindow(windowName) {
+        let WinDOM = this.DOM.windows[windowName];
+        //WinDOM.parent.removeChild(WinDOM);
+        WinDOM.remove();
+        delete this.DOM.windows[windowName];
+        delete this.windows[windowName];
+    }
+
     getWindowBounds(windowName) {
         let numDocked = 0;
         for (let win in this.windows) {

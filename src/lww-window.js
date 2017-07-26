@@ -16,9 +16,6 @@ class LWW {
     /*
         Full args:
         {
-            minimizable: true | false,
-            maximizable: true | false,
-            collapsible: true | false,
 
             bounds: {
                 min: {
@@ -70,7 +67,20 @@ class LWW {
             offset: [] // used when moving/resizing
         };
 
+        this.callbacks = {
+            resizeStart: (I) => I,
+            resizeEnd: (I) => I,
+            resize: (I) => I,
+            moveStart: (I) => I,
+            move: (I) => I,
+            moveEnd: (I) => I,
+        }
+
         this._init();
+    }
+
+    on(key, callback) {
+        this.callbacks[key] = callback;
     }
 
     get dock() {
@@ -83,6 +93,7 @@ class LWW {
     relocate(x, y) {
         this.state.location = [x, y];
         this.resizeRelocateDOMContainer();
+        this.callbacks.move(this.state.location);
     }
 
     resize(w, h) {
@@ -170,41 +181,49 @@ class LWW {
     set left(left) {
         this.x0 = left;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set right(right) {
         this.x1 = right;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set lowerLeft(lowerLeft) {
         this.x0y1 = lowerLeft;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set lowerRight(lowerRight) {
         this.x1y1 = lowerRight;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set bottom(bottom) {
         this.y1 = bottom;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set top(top) {
         this.y0 = top;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set upperLeft(upperLeft) {
         this.x0y0 = upperLeft;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set upperRight(upperRight) {
         this.x1y0 = upperRight;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
     // -----------
 
@@ -251,9 +270,13 @@ class LWW {
         this.DOM.buttons = buttons;
         this.DOM.headerButtonsContainer = headerButtonsContainer;
 
-        this.resizeRelocateDOMContainer();
+        //this.resizeRelocateDOMContainer();
         this._resizeDOMContent();
         this._attachEventListeners();
+
+        setTimeout(() => {
+            this.resizeRelocateDOMContainer();
+        }, 250);
     }
 
     renderHeader() {
@@ -430,6 +453,11 @@ class LWW {
 
 
         let startDrag = (x, y) => {
+            if (this.mouse.loc === 'header')
+                this.callbacks.moveStart(this.state.location);
+            else
+                this.callbacks.resizeStart(this.state.location, this.state.size);
+
             this.mouse.offset = inferOffset(x, y);
 
             if (this.mouse.loc !== 'header' && this.mouse.loc !== 'none') { // Assume resize
@@ -443,10 +471,15 @@ class LWW {
             }
 
             this.mouse.isDragging = true;
-            this.mouse.moveCallback = this.inferMousedownAction();
+            this.mouse.moveCallback = this.inferMousemoveAction();
         }
 
         let endDrag = (x, y) => {
+            if (this.mouse.loc === 'header')
+                this.callbacks.moveEnd(this.state.location);
+            else
+                this.callbacks.resizeEnd(this.state.location, this.state.size);
+
             this.mouse.isDragging = false;
             this.mouse.moveCallback = (I) => I;
             this._updateContainerHandles();
@@ -529,8 +562,9 @@ class LWW {
 
         this.DOM.header.addEventListener('mousedown', (e) => {
             this.mouse.isDragging = true;
-            this._updateCursor();
             startDrag(e.x, e.y);
+            e.stopImmediatePropagation();
+            e.preventDefault();
         });
 
 
@@ -584,12 +618,16 @@ class LWW {
             let button = this.DOM.buttons[btn];
 
             button.addEventListener('mouseenter', (e) => {
-                this.mouse.loc = 'button';
-                this._updateCursor();
+                if (!this.mouse.isDragging) {
+                    this.mouse.loc = 'button';
+                    this._updateCursor();
+                }
             });
             button.addEventListener('mouseleave', (e) => {
-                this.mouse.loc = 'button';
-                this._updateCursor();
+                if (!this.mouse.isDragging) {
+                    this.mouse.loc = 'button';
+                    this._updateCursor();
+                }
 
             });
             button.addEventListener('mousemove', (e) => {
@@ -600,14 +638,11 @@ class LWW {
                 }
             });
             button.addEventListener('click', (e) => {
-                RestoreOverride();
                 this.click(btn);
                 e.stopImmediatePropagation();
                 e.preventDefault();
             });
             button.addEventListener('mousedown', (e) => {
-                //RestoreOverride();
-                this.click(btn);
                 e.stopImmediatePropagation();
                 e.preventDefault();
             });
@@ -646,7 +681,12 @@ class LWW {
     }
 
     close() {
+        // Clean up DOM
+        let WinDOM = this.DOM.container;
+        WinDOM.remove();
 
+        // Destroy window and its contents
+        this.manager.destroyWindow(this.name);
     }
 
     _updateCursor() {
@@ -738,8 +778,8 @@ class LWW {
         return false;
     }
 
-    inferMousedownAction() {
-        //loc = this.inferMouseLocation(x, y);
+    inferMousemoveAction() {
+        //loc = this.inferMouseLocation(x, y); // Already cached in this.mouse.loc
         let addArr = (dest, src) => {
             dest[0] += src[0];
             dest[1] += src[1];
@@ -770,18 +810,19 @@ class LWW {
         }
     }
 
-    mousemove(e) {
-
+    injectHTML(innerHTML) {
+        this.DOM.content.innerHTML = innerHTML;
     }
 
-    mousedown(e) {
-
+    injectHTMLElement(element) {
+        this.DOM.content.appendChild(element);
     }
 
-    mouseup(e) {
-
+    // TODO
+    injectAngularDirective(tag, Injector, attributes) {
+        // Injector will return the controller  scope
+        return Injector(tag, this.DOM.content, attributes);
     }
-
 }
 
 module.exports = LWW;

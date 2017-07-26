@@ -8,11 +8,17 @@ else
 let BTN_HEIGHT = 40,
     BTN_LENGTH = 60,
 
-    SIZE = [350, 250],
-    LOC = [25, 25],
+    HEADER_HEIGHT = 30,
+    RESIZE_MARGIN = 12,
 
-    BUTTONS = ['collapse', 'minimize', 'minsize', 'maximize'],
-    NUM_WINDOWS = 5,
+    MIN_SIZE = [200, 200],
+    SIZE = [350, 250],
+    MAX_SIZE = [700, 700],
+
+    LOC = [250, 250],
+
+    BUTTONS = ['collapse', 'minimize', 'minsize', 'maximize', 'close'],
+    NUM_WINDOWS = 1,
 
     DOCK_OFFSET = '5%';
 
@@ -43,31 +49,105 @@ for (let i = 0; i < NUM_WINDOWS; i++) {
     WINDOWS.push({
         options: {
             title: 'Win' + i + '..',
-            minimizable: true,
-            maximizable: true,
-            collapsible: true,
-
+            /*             minimizable: true,
+                        maximizable: true,
+                        collapsible: true,
+             */
             buttons: BUTTONS.slice(0),
 
             bounds: {
-                min: [230, 100],
-                max: [700, 700],
-                headerHeight: 30,
+                min: MIN_SIZE.slice(0),
+                max: MAX_SIZE.slice(0),
+                headerHeight: HEADER_HEIGHT,
             },
 
-            resizeMargin: 8,
+            resizeMargin: RESIZE_MARGIN,
             icon: undefined,
             dock: {
                 //            name: 'left' // DEMO/DEBUG - will be set in the dock loop
             }
         },
         state: {
-            override: 'none',
+            override: 'minimize',
             size: SIZE.slice(0),
             location: LOC.slice(0).slice(0)
         }
     })
 }
+
+let NG_INJECT = (tag, dest, attributes) => {
+    let $injector = angular.injector(['ng', 'LWWDemo']);
+    let $rootScope = $injector.get('$rootScope'),
+        $compile = $injector.get('$compile');
+
+    let scope = $rootScope.$new();
+    let innerHTML = angular.element(document.createElement(tag));
+
+    for (let key in attributes)
+        scope[key] = attributes[key];
+
+    let compiled = $compile(innerHTML)(scope);
+    angular.element(dest).append(compiled);
+
+    return scope;
+}
+
+let app = angular.module('LWWDemo', []);
+
+app.directive('lwwSettingsView', function () {
+    return {
+        restrict: "E",
+        scope: true,
+        template: `<div ng-model="win">
+                    <textarea style="    width: 100%;
+    height: 100%;
+    font-family: monospace;
+    background: black;
+    color: navajowhite;">
+
+    name = {{win.name}};
+    state = {{printState()}};
+
+
+    // Window config:
+{{getStringified()}}
+                    </textarea>
+                    </div>`,
+        link: function ($scope, el, attrs) {
+            console.log(el);
+            console.log($scope);
+            console.log(attrs);
+        },
+        controller: ["$scope", "$timeout", function ($scope, $timeout) {
+
+            let pretty = (json) => {
+                return JSON.stringify(json, null, 4);
+            }
+
+            $scope.getStringified = () => {
+                return `let config = ${pretty($scope.winConfig)}`;
+            }
+
+            $scope.printState = () => {
+                return pretty($scope.win.state);
+            }
+
+
+            let update = () => {
+                $timeout(() => {
+                    $scope.$apply();
+                }, 0);
+            }
+
+            $scope.win.on('resizeStart', update);
+            $scope.win.on('resize', update);
+            $scope.win.on('resizeEnd', update);
+            $scope.win.on('moveStart', update);
+            $scope.win.on('move', update);
+            $scope.win.on('moveEnd', update);
+        }]
+    }
+});
 
 let count = 0;
 
@@ -84,7 +164,23 @@ for (let DOCKNAME in DOCKS) {
         WINCONFIG.options.dock = {};
         WINCONFIG.options.dock.name = DOCKNAME;
 
-        LWWManager.addWindow('window' + count++, WINCONFIG);
+        let windowName = 'window' + count++;
+
+        LWWManager.addWindow(windowName, WINCONFIG);
+
+        let theWindow = LWWManager.getWindow(windowName);
+        theWindow.on('resizeStart', (args) => console.log("ResizeStart! " + args[1]));
+        theWindow.on('resize', (args) => console.log("Resize! " + args[1]));
+        theWindow.on('resizeEnd', (args) => console.log("ResizeEnd! " + args[1]));
+        theWindow.on('moveStart', (args) => console.log("moveStart! " + args));
+        theWindow.on('move', (args) => console.log("move! " + args));
+        theWindow.on('moveEnd', (args) => console.log("moveEnd! " + args));
+
+        let scope = LWWManager.getWindow(windowName).injectAngularDirective('lww-settings-view', NG_INJECT, {
+            winConfig: WINCONFIG,
+            win: theWindow
+        });
+
     }
 }
 },{"../src/lww":5}],2:[function(require,module,exports){
@@ -106,6 +202,14 @@ class Dock {
         this.size = {};
 
         this._init();
+    }
+
+    undockWindow(windowName) {
+        let WinDOM = this.DOM.windows[windowName];
+        //WinDOM.parent.removeChild(WinDOM);
+        WinDOM.remove();
+        delete this.DOM.windows[windowName];
+        delete this.windows[windowName];
     }
 
     getWindowBounds(windowName) {
@@ -365,7 +469,7 @@ let LWW = require('./lww-window');
 
 /*
     Manages...
-    * the dock 
+    * the dock
     * Z-indexing
     * spawning / despawning
     * positioning of the windows (Powered by popper.js)
@@ -378,7 +482,6 @@ class LWWManager {
 
         this.docks = {};
         this.windows = {};
-        //        this.ghost = undefined; // To transition animations etc
     }
 
     // Creates a dock that windows can be minimized to / maximized from
@@ -391,6 +494,17 @@ class LWWManager {
         if (args.options.dock.name) {
             this.connectWindowToDock(name, args.options.dock.name);
         }
+    }
+
+    getWindow(name) {
+        return this.windows[name];
+    }
+
+    destroyWindow(name) {
+        let window = this.windows[name];
+
+        this.docks[window.options.dock.name].undockWindow(name);
+        delete this.windows[name];
     }
 
     connectWindowToDock(windowName, dockName) {
@@ -425,9 +539,6 @@ class LWW {
     /*
         Full args:
         {
-            minimizable: true | false,
-            maximizable: true | false,
-            collapsible: true | false,
 
             bounds: {
                 min: {
@@ -479,7 +590,20 @@ class LWW {
             offset: [] // used when moving/resizing
         };
 
+        this.callbacks = {
+            resizeStart: (I) => I,
+            resizeEnd: (I) => I,
+            resize: (I) => I,
+            moveStart: (I) => I,
+            move: (I) => I,
+            moveEnd: (I) => I,
+        }
+
         this._init();
+    }
+
+    on(key, callback) {
+        this.callbacks[key] = callback;
     }
 
     get dock() {
@@ -492,6 +616,7 @@ class LWW {
     relocate(x, y) {
         this.state.location = [x, y];
         this.resizeRelocateDOMContainer();
+        this.callbacks.move(this.state.location);
     }
 
     resize(w, h) {
@@ -579,41 +704,49 @@ class LWW {
     set left(left) {
         this.x0 = left;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set right(right) {
         this.x1 = right;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set lowerLeft(lowerLeft) {
         this.x0y1 = lowerLeft;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set lowerRight(lowerRight) {
         this.x1y1 = lowerRight;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set bottom(bottom) {
         this.y1 = bottom;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set top(top) {
         this.y0 = top;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set upperLeft(upperLeft) {
         this.x0y0 = upperLeft;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
 
     set upperRight(upperRight) {
         this.x1y0 = upperRight;
         this.resizeRelocateDOMContainer();
+        this.callbacks.resize(this.state.location, this.state.size);
     }
     // -----------
 
@@ -660,9 +793,13 @@ class LWW {
         this.DOM.buttons = buttons;
         this.DOM.headerButtonsContainer = headerButtonsContainer;
 
-        this.resizeRelocateDOMContainer();
+        //this.resizeRelocateDOMContainer();
         this._resizeDOMContent();
         this._attachEventListeners();
+
+        setTimeout(() => {
+            this.resizeRelocateDOMContainer();
+        }, 250);
     }
 
     renderHeader() {
@@ -839,6 +976,11 @@ class LWW {
 
 
         let startDrag = (x, y) => {
+            if (this.mouse.loc === 'header')
+                this.callbacks.moveStart(this.state.location);
+            else
+                this.callbacks.resizeStart(this.state.location, this.state.size);
+
             this.mouse.offset = inferOffset(x, y);
 
             if (this.mouse.loc !== 'header' && this.mouse.loc !== 'none') { // Assume resize
@@ -852,10 +994,15 @@ class LWW {
             }
 
             this.mouse.isDragging = true;
-            this.mouse.moveCallback = this.inferMousedownAction();
+            this.mouse.moveCallback = this.inferMousemoveAction();
         }
 
         let endDrag = (x, y) => {
+            if (this.mouse.loc === 'header')
+                this.callbacks.moveEnd(this.state.location);
+            else
+                this.callbacks.resizeEnd(this.state.location, this.state.size);
+
             this.mouse.isDragging = false;
             this.mouse.moveCallback = (I) => I;
             this._updateContainerHandles();
@@ -938,8 +1085,9 @@ class LWW {
 
         this.DOM.header.addEventListener('mousedown', (e) => {
             this.mouse.isDragging = true;
-            this._updateCursor();
             startDrag(e.x, e.y);
+            e.stopImmediatePropagation();
+            e.preventDefault();
         });
 
 
@@ -993,12 +1141,16 @@ class LWW {
             let button = this.DOM.buttons[btn];
 
             button.addEventListener('mouseenter', (e) => {
-                this.mouse.loc = 'button';
-                this._updateCursor();
+                if (!this.mouse.isDragging) {
+                    this.mouse.loc = 'button';
+                    this._updateCursor();
+                }
             });
             button.addEventListener('mouseleave', (e) => {
-                this.mouse.loc = 'button';
-                this._updateCursor();
+                if (!this.mouse.isDragging) {
+                    this.mouse.loc = 'button';
+                    this._updateCursor();
+                }
 
             });
             button.addEventListener('mousemove', (e) => {
@@ -1009,14 +1161,11 @@ class LWW {
                 }
             });
             button.addEventListener('click', (e) => {
-                RestoreOverride();
                 this.click(btn);
                 e.stopImmediatePropagation();
                 e.preventDefault();
             });
             button.addEventListener('mousedown', (e) => {
-                //RestoreOverride();
-                this.click(btn);
                 e.stopImmediatePropagation();
                 e.preventDefault();
             });
@@ -1055,7 +1204,12 @@ class LWW {
     }
 
     close() {
+        // Clean up DOM
+        let WinDOM = this.DOM.container;
+        WinDOM.remove();
 
+        // Destroy window and its contents
+        this.manager.destroyWindow(this.name);
     }
 
     _updateCursor() {
@@ -1147,8 +1301,8 @@ class LWW {
         return false;
     }
 
-    inferMousedownAction() {
-        //loc = this.inferMouseLocation(x, y);
+    inferMousemoveAction() {
+        //loc = this.inferMouseLocation(x, y); // Already cached in this.mouse.loc
         let addArr = (dest, src) => {
             dest[0] += src[0];
             dest[1] += src[1];
@@ -1179,18 +1333,19 @@ class LWW {
         }
     }
 
-    mousemove(e) {
-
+    injectHTML(innerHTML) {
+        this.DOM.content.innerHTML = innerHTML;
     }
 
-    mousedown(e) {
-
+    injectHTMLElement(element) {
+        this.DOM.content.appendChild(element);
     }
 
-    mouseup(e) {
-
+    // TODO
+    injectAngularDirective(tag, Injector, attributes) {
+        // Injector will return the controller  scope
+        return Injector(tag, this.DOM.content, attributes);
     }
-
 }
 
 module.exports = LWW;
@@ -1198,9 +1353,7 @@ module.exports = LWW;
 let LWWManager = require('./lww-manager');
 
 let theManager = new LWWManager();
-
-if (typeof require !== 'function')
-    window.LWWManager = theManager;
+window.LWWManager = theManager;
 
 module.exports = theManager;
 },{"./lww-manager":3}]},{},[1]);

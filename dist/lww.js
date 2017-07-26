@@ -19,6 +19,10 @@ class Dock {
         this._init();
     }
 
+    undockWindow(windowName) {
+        this.DOM.windows[windowName].remove();
+    }
+
     getWindowBounds(windowName) {
         let numDocked = 0;
         for (let win in this.windows) {
@@ -276,7 +280,7 @@ let LWW = require('./lww-window');
 
 /*
     Manages...
-    * the dock 
+    * the dock
     * Z-indexing
     * spawning / despawning
     * positioning of the windows (Powered by popper.js)
@@ -289,7 +293,6 @@ class LWWManager {
 
         this.docks = {};
         this.windows = {};
-        //        this.ghost = undefined; // To transition animations etc
     }
 
     // Creates a dock that windows can be minimized to / maximized from
@@ -302,6 +305,17 @@ class LWWManager {
         if (args.options.dock.name) {
             this.connectWindowToDock(name, args.options.dock.name);
         }
+    }
+
+    getWindow(name) {
+        return this.windows[name];
+    }
+
+    destroyWindow(name) {
+        let window = this.windows[name];
+
+        this.docks[window.options.dock.name].undockWindow(name);
+        delete this.windows[name];
     }
 
     connectWindowToDock(windowName, dockName) {
@@ -920,13 +934,11 @@ class LWW {
                 }
             });
             button.addEventListener('click', (e) => {
-                RestoreOverride();
                 this.click(btn);
                 e.stopImmediatePropagation();
                 e.preventDefault();
             });
             button.addEventListener('mousedown', (e) => {
-                //RestoreOverride();
                 this.click(btn);
                 e.stopImmediatePropagation();
                 e.preventDefault();
@@ -966,7 +978,8 @@ class LWW {
     }
 
     close() {
-
+        // Destroy window and its contents
+        this.manager.destroyWindow(this.name);
     }
 
     _updateCursor() {
@@ -1059,7 +1072,7 @@ class LWW {
     }
 
     inferMousedownAction() {
-        //loc = this.inferMouseLocation(x, y);
+        //loc = this.inferMouseLocation(x, y); // Already cached in this.mouse.loc
         let addArr = (dest, src) => {
             dest[0] += src[0];
             dest[1] += src[1];
@@ -1089,19 +1102,6 @@ class LWW {
                 return (I) => I;
         }
     }
-
-    mousemove(e) {
-
-    }
-
-    mousedown(e) {
-
-    }
-
-    mouseup(e) {
-
-    }
-
 }
 
 module.exports = LWW;
@@ -1109,7 +1109,6 @@ module.exports = LWW;
 let LWWManager = require('./lww-manager');
 
 let theManager = new LWWManager();
-
 window.LWWManager = theManager;
 
 module.exports = theManager;

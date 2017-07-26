@@ -26,7 +26,7 @@ let LWW = require('./lww-window');
 
 /*
     Manages...
-    * the dock 
+    * the dock
     * Z-indexing
     * spawning / despawning
     * positioning of the windows (Powered by popper.js)
@@ -39,7 +39,6 @@ class LWWManager {
 
         this.docks = {};
         this.windows = {};
-        //        this.ghost = undefined; // To transition animations etc
     }
 
     // Creates a dock that windows can be minimized to / maximized from
@@ -52,6 +51,17 @@ class LWWManager {
         if (args.options.dock.name) {
             this.connectWindowToDock(name, args.options.dock.name);
         }
+    }
+
+    getWindow(name) {
+        return this.windows[name];
+    }
+
+    destroyWindow(name) {
+        let window = this.windows[name];
+
+        this.docks[window.options.dock.name].undockWindow(name);
+        delete this.windows[name];
     }
 
     connectWindowToDock(windowName, dockName) {
