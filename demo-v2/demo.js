@@ -601,6 +601,7 @@ class LWW {
             moveStart: (I) => I,
             move: (I) => I,
             moveEnd: (I) => I,
+            mouseLocChanged: (I) => I
         }
 
         this._init();
