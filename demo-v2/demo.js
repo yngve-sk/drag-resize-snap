@@ -18,7 +18,7 @@ let BTN_HEIGHT = 40,
     LOC = [250, 250],
 
     BUTTONS = ['collapse', 'minimize', 'minsize', 'maximize', 'close'],
-    NUM_WINDOWS = 1,
+    NUM_WINDOWS = 2,
 
     DOCK_OFFSET = '5%';
 
