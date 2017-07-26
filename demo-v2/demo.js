@@ -629,6 +629,9 @@ class LWW {
         this.resizeRelocateDOMContainer();
     }
 
+    // ------------------------
+    // Boilerplate getters
+
     get width() {
         return this.state.size[0];
     }
@@ -637,12 +640,20 @@ class LWW {
         return this.state.size[1];
     }
 
-    set width(width) {
-        this.state.size[0] = width;
+    get maxWidth() {
+        return this.options.bounds.max[0];
     }
 
-    set height(height) {
-        this.state.size[1] = height;
+    get maxHeight() {
+        return this.options.bounds.max[1];
+    }
+
+    get minWidth() {
+        return this.options.bounds.min[0];
+    }
+
+    get minHeight() {
+        return this.options.bounds.min[1];
     }
 
     get x0() {
@@ -659,6 +670,41 @@ class LWW {
 
     get y1() {
         return this.state.location[1] + this.state.size[1];
+    }
+
+    // ------------------------
+    // Clamping
+    _clampWidth(w) {
+        return Math.max(this.minWidth, Math.min(this.maxWidth, w));
+    }
+
+    _clampHeight(h) {
+        return Math.max(this.minHeight, Math.min(this.maxHeight, h));
+    }
+
+    _clampX0(x0, x1) {
+        let minX0 = x1 - this.maxWidth,
+            maxX0 = x1 - this.minWidth;
+
+        return Math.min(maxX0, Math.max(minX0, x0));
+    }
+
+    _clampY0(y0, y1) {
+        let minY0 = y1 - this.maxHeight,
+            maxY0 = y1 - this.minHeight;
+
+        return Math.min(maxY0, Math.max(minY0, y0));
+    }
+
+    // ------------------------
+    // Boilerplate setters
+
+    set width(width) {
+        this.state.size[0] = this._clampWidth(width);
+    }
+
+    set height(height) {
+        this.state.size[1] = this._clampHeight(height);
     }
 
     set x0y0(x0y0) {
@@ -681,27 +727,30 @@ class LWW {
         this.y1 = x1y1[1];
     }
 
-    // These setters do not trigger reflows
     set x0(x0) {
-        let newWidth = this.x1 - x0;
+        let x1 = this.x1;
+        x0 = this._clampX0(x0, x1);
+
         this.state.location[0] = x0;
-        this.width = newWidth;
+        this.width = x1 - x0;
     }
 
     set y0(y0) {
-        let newHeight = this.y1 - y0;
+        let y1 = this.y1;
+        y0 = this._clampY0(y0, y1);
+
         this.state.location[1] = y0;
-        this.height = newHeight;
+        this.height = y1 - y0;
     }
 
     set x1(x1) {
         let newWidth = x1 - this.x0;
-        this.state.size[0] = newWidth;
+        this.width = newWidth;
     }
 
     set y1(y1) {
         let newHeight = y1 - this.y0;
-        this.state.size[1] = newHeight;
+        this.height = newHeight;
     }
     // -----------
 
@@ -788,7 +837,7 @@ class LWW {
         container.appendChild(header);
         container.appendChild(content);
 
-        document.body.appendChild(container);
+        this.manager.parent.appendChild(container);
 
         this.DOM.container = container;
         this.DOM.content = content;
@@ -895,7 +944,7 @@ class LWW {
                         width: ${this.width};
                         height: ${this.height};
                         opacity: 1;
-                        z-index: 500;
+                        z-index: 21;
                         display: block;
                         `;
                         break;
@@ -1014,39 +1063,39 @@ class LWW {
             this._updateContainerHandles();
         }
 
+        /* 
+                this.DOM.content.addEventListener('mousemove', (e) => {
+                    console.log("mm content");
 
-        this.DOM.content.addEventListener('mousemove', (e) => {
-            console.log("mm content");
+                    if (!this.mouse.isDragging) {
+                        e.stopImmediatePropagation();
+                        //e.preventDefault();
+                        return false;
+                    }
+                });
 
-            if (!this.mouse.isDragging) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                return false;
-            }
-        });
+                this.DOM.content.addEventListener('mouseenter', (e) => {
+                    console.log("mm content");
 
-        this.DOM.content.addEventListener('mouseenter', (e) => {
-            console.log("mm content");
+                    this.setMouseLoc('content');
+                    this._updateCursor();
 
-            this.setMouseLoc('content');
-            this._updateCursor();
+                    if (!this.mouse.isDragging) {
+                        e.stopImmediatePropagation();
+                        //e.preventDefault();
+                        return false;
+                    }
+                });
 
-            if (!this.mouse.isDragging) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                return false;
-            }
-        });
+                this.DOM.content.addEventListener('mouseleave', (e) => {
+                    console.log("mm content");
 
-        this.DOM.content.addEventListener('mouseleave', (e) => {
-            console.log("mm content");
-
-            if (!this.mouse.isDragging) {
-                e.stopImmediatePropagation();
-                e.preventDefault();
-                return false;
-            }
-        });
+                    if (!this.mouse.isDragging) {
+                        e.stopImmediatePropagation();
+                        //e.preventDefault();
+                        return false;
+                    }
+                }); */
 
         this.DOM.header.addEventListener('mousemove', (e) => {
             console.log("mm header");
@@ -1057,7 +1106,7 @@ class LWW {
                 this._updateCursor();
 
                 e.stopImmediatePropagation();
-                e.preventDefault();
+                //e.preventDefault();
                 return false;
             }
         });
@@ -1070,7 +1119,7 @@ class LWW {
                 this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
                 this._updateCursor();
                 e.stopImmediatePropagation();
-                e.preventDefault();
+                //e.preventDefault();
                 return false;
             }
         });
@@ -1083,7 +1132,7 @@ class LWW {
             if (!this.mouse.isDragging) {
                 this._updateCursor();
                 e.stopImmediatePropagation();
-                e.preventDefault();
+                //e.preventDefault();
                 return false;
             }
         });
@@ -1093,7 +1142,7 @@ class LWW {
             this.mouse.isDragging = true;
             startDrag(e.x, e.y);
             e.stopImmediatePropagation();
-            e.preventDefault();
+            //e.preventDefault();
         });
 
 
@@ -1161,18 +1210,18 @@ class LWW {
             button.addEventListener('mousemove', (e) => {
                 if (!this.mouse.isDragging) {
                     e.stopImmediatePropagation();
-                    e.preventDefault();
+                    //e.preventDefault();
                     return false;
                 }
             });
             button.addEventListener('click', (e) => {
                 this.click(btn);
                 e.stopImmediatePropagation();
-                e.preventDefault();
+                //e.preventDefault();
             });
             button.addEventListener('mousedown', (e) => {
                 e.stopImmediatePropagation();
-                e.preventDefault();
+                //e.preventDefault();
             });
         }
     }
