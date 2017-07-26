@@ -80,7 +80,7 @@
     "popup"
   ],
   "license": "ISC",
-  "main": "dist/lww.js",
+  "main": "src/lww.js",
   "maintainers": [
     {
       "name": "ysk92",
