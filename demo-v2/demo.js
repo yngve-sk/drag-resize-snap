@@ -68,7 +68,7 @@ for (let i = 0; i < NUM_WINDOWS; i++) {
             }
         },
         state: {
-            override: 'minimize',
+            override: 'none',
             size: SIZE.slice(0),
             location: LOC.slice(0).slice(0)
         }
@@ -798,11 +798,11 @@ class LWW {
         this.DOM.headerButtonsContainer = headerButtonsContainer;
 
         //this.resizeRelocateDOMContainer();
-        this._resizeDOMContent();
         this._attachEventListeners();
 
         setTimeout(() => {
             this.resizeRelocateDOMContainer();
+            this._resizeDOMContent();
         }, 250);
     }
 
@@ -894,7 +894,8 @@ class LWW {
                         width: ${this.width};
                         height: ${this.height};
                         opacity: 1;
-                        z-index: 500
+                        z-index: 500;
+                        display: block;
                         `;
                         break;
                 }

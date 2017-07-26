@@ -4,9 +4,12 @@
 
 Demo: https://rawgit.com/yngve-sk/lww.js/master/demo-v2/index.html
 
-Screenshots (8 docks with different flow directions with 3 windows each)
-![alt text](./screenshots/lww-demo-minimize.gif "Minimizing windows")
-![alt text](./screenshots/lww-demo-resize.gif "Resizing a window")
+Note: The text area inside the windows contain the configuration JSON object to get the window in its current state. Disregard the containerHandles in the config - these are calculated and does not need to be specified at all in the initial config.
+
+Screenshots:
+
+![alt text](./screenshots/demo1.gif "Minimizing windows")
+![alt text](./screenshots/demo2.gif "Resizing a window")
 
 
 Lightweight JS windowing library. Features:
@@ -26,9 +29,9 @@ Inspired by on drag-resize-snap by arctelix ( https://github.com/arctelix/drag-r
 
     npm install lww.js
 
-#### Usage:
+#### Usage/API:
 
 TODO, see demo/ to see how it is used.
 
 #### Contibuting:
- Contributions are very welcome, the source code is (hopefully) pretty straight forward.
+ Contributions + bug reports/fixes are very welcome, the source code is (hopefully) pretty straight forward. The code is divided into only 3 classes, and most of the code in window class is purely boilerplate.

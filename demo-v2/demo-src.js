@@ -67,7 +67,7 @@ for (let i = 0; i < NUM_WINDOWS; i++) {
             }
         },
         state: {
-            override: 'minimize',
+            override: 'none',
             size: SIZE.slice(0),
             location: LOC.slice(0).slice(0)
         }
