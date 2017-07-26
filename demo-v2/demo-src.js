@@ -105,6 +105,7 @@ app.directive('lwwSettingsView', function () {
     color: navajowhite;">
 
     name = {{win.name}};
+    MOUSE LOC: {{printMouse()}}
     state = {{printState()}};
 
 
@@ -131,6 +132,10 @@ app.directive('lwwSettingsView', function () {
                 return pretty($scope.win.state);
             }
 
+            $scope.printMouse = () => {
+                return pretty($scope.win.mouse);
+            }
+
 
             let update = () => {
                 $timeout(() => {
@@ -144,6 +149,7 @@ app.directive('lwwSettingsView', function () {
             $scope.win.on('moveStart', update);
             $scope.win.on('move', update);
             $scope.win.on('moveEnd', update);
+            $scope.win.on('mouseLocChanged', update);
         }]
     }
 });

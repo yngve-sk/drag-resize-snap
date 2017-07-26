@@ -399,8 +399,6 @@ class LWW {
 
         this.mouse = {
             isDragging: false,
-            isResizing: false,
-            isDown: false,
             loc: 'none',
             offset: [] // used when moving/resizing
         };
@@ -837,7 +835,7 @@ class LWW {
         this.DOM.content.addEventListener('mouseenter', (e) => {
             console.log("mm content");
 
-            this.mouse.loc = 'content';
+            this.setMouseLoc('content');
             this._updateCursor();
 
             if (!this.mouse.isDragging) {
@@ -862,7 +860,7 @@ class LWW {
 
 
             if (!this.mouse.isDragging) {
-                this.mouse.loc = this.inferMouseLocation(e.x, e.y);
+                this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
                 this._updateCursor();
 
                 e.stopImmediatePropagation();
@@ -876,7 +874,7 @@ class LWW {
             console.log("mm header");
 
             if (!this.mouse.isDragging) {
-                this.mouse.loc = this.inferMouseLocation(e.x, e.y);
+                this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
                 this._updateCursor();
                 e.stopImmediatePropagation();
                 e.preventDefault();
@@ -887,7 +885,7 @@ class LWW {
 
         this.DOM.header.addEventListener('mouseleave', (e) => {
             console.log("mm header");
-            this.mouse.loc = null;
+            this.setMouseLoc(null);
 
             if (!this.mouse.isDragging) {
                 this._updateCursor();
@@ -911,7 +909,7 @@ class LWW {
                 return false;
             }
 
-            this.mouse.loc = this.inferMouseLocation(e.x, e.y);
+            this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
             this._updateCursor();
         });
 
@@ -923,7 +921,6 @@ class LWW {
 
         this.DOM.container.addEventListener('mouseup', (e) => {
             this.mouse.isDragging = false;
-            this.mouse.isResizing = false;
             endDrag();
             console.log("mm container");
         });
@@ -957,13 +954,13 @@ class LWW {
 
             button.addEventListener('mouseenter', (e) => {
                 if (!this.mouse.isDragging) {
-                    this.mouse.loc = 'button';
+                    this.setMouseLoc('button');
                     this._updateCursor();
                 }
             });
             button.addEventListener('mouseleave', (e) => {
                 if (!this.mouse.isDragging) {
-                    this.mouse.loc = 'button';
+                    this.setMouseLoc('button');
                     this._updateCursor();
                 }
 
@@ -985,6 +982,11 @@ class LWW {
                 e.preventDefault();
             });
         }
+    }
+
+    setMouseLoc(loc) {
+        this.mouse.loc = loc;
+        this.callbacks.mouseLocChanged(this.mouse.loc);
     }
 
     click(button) {
@@ -1113,7 +1115,7 @@ class LWW {
         }
 
         //console.error("Trying to infer container mouse location when mouse is not on container");
-        return false;
+        return 'none';
     }
 
     inferMousemoveAction() {
