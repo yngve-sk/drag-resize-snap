@@ -189,7 +189,21 @@ for (let DOCKNAME in DOCKS) {
 
     }
 }
-},{"../src/lww":5}],2:[function(require,module,exports){
+},{"../src/lww":6}],2:[function(require,module,exports){
+/* Copypaste from underscorejs source */
+
+let _ = {};
+
+_.isObject = function (obj) {
+    var type = typeof obj;
+    return type === 'function' || type === 'object' && !!obj;
+};
+
+
+module.exports = {
+    _: _
+}
+},{}],3:[function(require,module,exports){
 class Dock {
     constructor(name, options, manager) {
         this.manager = manager;
@@ -446,7 +460,7 @@ class Dock {
 }
 
 module.exports = Dock;
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 let Dock = require('./lww-dock');
 let LWW = require('./lww-window');
 
@@ -478,7 +492,7 @@ let LWW = require('./lww-window');
     * the dock
     * Z-indexing
     * spawning / despawning
-    * positioning of the windows (Powered by popper.js)
+    * positioning of the windows, ability to spawn next to an arbitrary div (Powered by popper.js) (TODO)
 */
 class LWWManager {
     constructor() {
@@ -488,6 +502,12 @@ class LWWManager {
 
         this.docks = {};
         this.windows = {};
+
+        this.parent = document.body;
+    }
+
+    setParent(parent) {
+        this.parent = parent;
     }
 
     // Creates a dock that windows can be minimized to / maximized from
@@ -526,7 +546,10 @@ class LWWManager {
 }
 
 module.exports = LWWManager;
-},{"./lww-dock":2,"./lww-window":4}],4:[function(require,module,exports){
+},{"./lww-dock":3,"./lww-window":5}],5:[function(require,module,exports){
+let EXT = require('./helper-bundle'),
+    _ = EXT._;
+
 let LOC_TO_MOUSE_STYLE = {
     'bottom-left': 'nesw-resize',
     'bottom-right': 'nwse-resize',
@@ -540,6 +563,10 @@ let LOC_TO_MOUSE_STYLE = {
     'content': 'default',
     'button': 'default'
 };
+
+
+
+
 
 class LWW {
     /*
@@ -598,17 +625,44 @@ class LWW {
             resizeStart: (I) => I,
             resizeEnd: (I) => I,
             resize: (I) => I,
+
             moveStart: (I) => I,
             move: (I) => I,
             moveEnd: (I) => I,
-            mouseLocChanged: (I) => I
+
+            mouseLocChanged: (I) => I,
+
+            close: (I) => I,
+
+            /*             collapse: (I) => I,
+                        uncollapse: (I) => I,
+
+                        minimize: (I) => I,
+                        unminimize: (I) => I, */
         }
 
         this._init();
     }
 
     on(key, callback) {
-        this.callbacks[key] = callback;
+        if (_.isObject(key)) {
+            /*
+                Example input:
+                window.on({
+                    'resize': () => {...},
+                    'resizeStart': () => {...},
+                    'resizeEnd: () => {...},
+                    'move': () => {...}
+                })
+            */
+
+            for (let theKey in key) {
+                this.on(theKey, key[theKey]);
+            }
+        } else {
+            this.callbacks[key] = callback;
+        }
+
     }
 
     get dock() {
@@ -885,11 +939,11 @@ class LWW {
                         }
 
                         newStyle = `
-                        left: ${this.state.location[0]};
-                        top: ${this.state.location[1]};
-                        width: ${this.options.bounds.max[0]};
-                        height: ${this.options.bounds.max[1]};
-                    `;
+                    left: ${this.state.location[0]};
+                    top: ${this.state.location[1]};
+                    width: ${this.options.bounds.max[0]};
+                    height: ${this.options.bounds.max[1]};
+                `;
                         break;
                     case 'minsize':
                         if (!this.options.bounds.min) {
@@ -897,11 +951,11 @@ class LWW {
                         }
 
                         newStyle = `
-                        left: ${this.state.location[0]};
-                        top: ${this.state.location[1]};
-                        width: ${this.options.bounds.min[0]};
-                        height: ${this.options.bounds.min[1]};
-                    `;
+                    left: ${this.state.location[0]};
+                    top: ${this.state.location[1]};
+                    width: ${this.options.bounds.min[0]};
+                    height: ${this.options.bounds.min[1]};
+                `;
                         break;
                     case 'minimize':
                         if (!this.options.dock) {
@@ -913,13 +967,13 @@ class LWW {
 
                         // TODO move it to the dock and minimize it
                         newStyle = `
-                        left: ${btnBounds.left};
-                        top: ${btnBounds.top};
-                        width: ${btnBounds.width};
-                        height: ${btnBounds.height};
-                        z-index: -1;
-                        opacity: 0;
-                    `;
+                    left: ${btnBounds.left};
+                    top: ${btnBounds.top};
+                    width: ${btnBounds.width};
+                    height: ${btnBounds.height};
+                    z-index: -1;
+                    opacity: 0;
+                `;
 
                         /* setTimeout(() => {
                             this.toggleState('minimize');
@@ -927,11 +981,11 @@ class LWW {
                         break;
                     case 'collapse':
                         newStyle = `
-                        left: ${this.x0};
-                        top: ${this.y0};
-                        width: ${this.options.bounds.min[0]};
-                        height: ${this.options.bounds.headerHeight};
-                        `;
+                    left: ${this.x0};
+                    top: ${this.y0};
+                    width: ${this.options.bounds.min[0]};
+                    height: ${this.options.bounds.headerHeight};
+                    `;
                         break;
                     default:
 
@@ -939,14 +993,14 @@ class LWW {
                             this.disableAnimate(); */
 
                         newStyle = `
-                        left: ${this.x0};
-                        top: ${this.y0};
-                        width: ${this.width};
-                        height: ${this.height};
-                        opacity: 1;
-                        z-index: 21;
-                        display: block;
-                        `;
+                    left: ${this.x0};
+                    top: ${this.y0};
+                    width: ${this.width};
+                    height: ${this.height};
+                    opacity: 1;
+                    z-index: 21;
+                    display: block;
+                    `;
                         break;
                 }
 
@@ -956,9 +1010,15 @@ class LWW {
     }
 
     toggleState(state, animate) {
-        if (this.state.override === state) {
+        let undo = this.state.override === state;
+
+        if (undo) {
             this.state.override = 'none';
             animate = true;
+
+            setTimeout(() => {
+                this.callbacks.resizeEnd(this.x0y0, [this.width, this.height])
+            }, 250);
         } else {
             this.state.override = state;
         }
@@ -985,10 +1045,10 @@ class LWW {
 
     _applyDOMContentMargins() {
         let newStyle = `
-                width: calc(100% - ${2 * this.options.resizeMargin}px);
-                height: calc(100% - ${this.options.bounds.headerHeight + this.options.resizeMargin}px);
-                left: ${this.options.resizeMargin}px;
-                `;
+            width: calc(100% - ${2 * this.options.resizeMargin}px);
+            height: calc(100% - ${this.options.bounds.headerHeight + this.options.resizeMargin}px);
+            left: ${this.options.resizeMargin}px;
+            `;
 
         this.DOM.content.style = newStyle;
 
@@ -1063,31 +1123,7 @@ class LWW {
             this._updateContainerHandles();
         }
 
-        /* 
-                this.DOM.content.addEventListener('mousemove', (e) => {
-                    console.log("mm content");
-
-                    if (!this.mouse.isDragging) {
-                        e.stopImmediatePropagation();
-                        //e.preventDefault();
-                        return false;
-                    }
-                });
-
-                this.DOM.content.addEventListener('mouseenter', (e) => {
-                    console.log("mm content");
-
-                    this.setMouseLoc('content');
-                    this._updateCursor();
-
-                    if (!this.mouse.isDragging) {
-                        e.stopImmediatePropagation();
-                        //e.preventDefault();
-                        return false;
-                    }
-                });
-
-                this.DOM.content.addEventListener('mouseleave', (e) => {
+        /*         this.DOM.content.addEventListener('mousemove', (e) => {
                     console.log("mm content");
 
                     if (!this.mouse.isDragging) {
@@ -1097,10 +1133,31 @@ class LWW {
                     }
                 }); */
 
+        this.DOM.content.addEventListener('mouseenter', (e) => {
+            console.log("mm content");
+
+            this.setMouseLoc('content');
+            this._updateCursor();
+
+            if (!this.mouse.isDragging) {
+                e.stopImmediatePropagation();
+                //e.preventDefault();
+                return false;
+            }
+        });
+
+        this.DOM.content.addEventListener('mouseleave', (e) => {
+            console.log("mm content");
+            this.setMouseLoc('none');
+
+            if (!this.mouse.isDragging) {
+                e.stopImmediatePropagation();
+                //e.preventDefault();
+                return false;
+            }
+        });
+
         this.DOM.header.addEventListener('mousemove', (e) => {
-            console.log("mm header");
-
-
             if (!this.mouse.isDragging) {
                 this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
                 this._updateCursor();
@@ -1113,8 +1170,6 @@ class LWW {
 
 
         this.DOM.header.addEventListener('mouseenter', (e) => {
-            console.log("mm header");
-
             if (!this.mouse.isDragging) {
                 this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
                 this._updateCursor();
@@ -1126,7 +1181,6 @@ class LWW {
 
 
         this.DOM.header.addEventListener('mouseleave', (e) => {
-            console.log("mm header");
             this.setMouseLoc(null);
 
             if (!this.mouse.isDragging) {
@@ -1140,6 +1194,7 @@ class LWW {
 
         this.DOM.header.addEventListener('mousedown', (e) => {
             this.mouse.isDragging = true;
+
             startDrag(e.x, e.y);
             e.stopImmediatePropagation();
             //e.preventDefault();
@@ -1151,27 +1206,30 @@ class LWW {
                 return false;
             }
 
-            this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
-            this._updateCursor();
+            if (this.mouse.loc !== 'content') {
+                this.setMouseLoc(this.inferMouseLocation(e.x, e.y));
+                this._updateCursor();
+            }
         });
 
 
         this.DOM.container.addEventListener('mousedown', (e) => {
-            startDrag(e.x, e.y);
+            if (this.mouse.loc !== 'content')
+                startDrag(e.x, e.y);
         });
 
 
         this.DOM.container.addEventListener('mouseup', (e) => {
+            if (this.mouse.isDragging) {
+                endDrag();
+            }
             this.mouse.isDragging = false;
-            endDrag();
-            console.log("mm container");
         });
 
         this.DOM.container.addEventListener('mouseleave', (e) => {
             if (!this.mouse.isDragging) {
                 document.body.style.cursor = 'default';
             }
-            console.log("mm container");
         });
 
         document.addEventListener('mousemove', (e) => {
@@ -1179,7 +1237,7 @@ class LWW {
                 return;
 
             // Drag or resize
-            console.log("drag(" + e.x + ", " + e.y + ")");
+            //console.log("drag(" + e.x + ", " + e.y + ")");
             this.mouse.moveCallback([e.x, e.y]);
         });
 
@@ -1228,6 +1286,7 @@ class LWW {
 
     setMouseLoc(loc) {
         this.mouse.loc = loc;
+        console.log("setMouseLoc: " + loc);
         this.callbacks.mouseLocChanged(this.mouse.loc);
     }
 
@@ -1264,6 +1323,7 @@ class LWW {
 
     close() {
         // Clean up DOM
+        this.callbacks['close']();
         let WinDOM = this.DOM.container;
         WinDOM.remove();
 
@@ -1296,7 +1356,7 @@ class LWW {
     __isWithinHandle(v, dir) {
         let handle = this.state.containerHandles[dir];
         let contains = handle[0] <= v && v <= handle[1];
-        console.log(contains + " --- Checking if " + v + " is on " + dir + " handle = [" + handle[0] + ', ' + handle[1] + ']');
+        //console.log(contains + " --- Checking if " + v + " is on " + dir + " handle = [" + handle[0] + ', ' + handle[1] + ']');
         return contains;
     }
 
@@ -1408,11 +1468,11 @@ class LWW {
 }
 
 module.exports = LWW;
-},{}],5:[function(require,module,exports){
+},{"./helper-bundle":2}],6:[function(require,module,exports){
 let LWWManager = require('./lww-manager');
 
 let theManager = new LWWManager();
 window.LWWManager = theManager;
 
 module.exports = theManager;
-},{"./lww-manager":3}]},{},[1]);
+},{"./lww-manager":4}]},{},[1]);
