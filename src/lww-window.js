@@ -257,6 +257,11 @@ class LWW {
         let newHeight = y1 - this.y0;
         this.height = newHeight;
     }
+
+    set Z(Z) {
+        this.DOM.container.style['z-index'] = Z;
+        this._z = Z;
+    }
     // -----------
 
     // These ones do trigger reflows
@@ -334,6 +339,7 @@ class LWW {
         let content = document.createElement('div');
 
         container.setAttribute('class', 'lww-container');
+        container.style['z-index'] = 21;
         header.setAttribute('class', 'lww-header');
         headerLabel.setAttribute('class', 'lww-header-label');
         headerButtonsContainer.setAttribute('class', 'lww-header-buttons-container');
@@ -373,6 +379,18 @@ class LWW {
         this.DOM.container.classList.remove('lww-animated');
     }
 
+    toFront() {
+        this.manager.moveToFront(this);
+        // this.__zCache = this.DOM.container.style['z-index'];
+        // this.DOM.container.style['z-index'] = 50;
+        // this.DOM.container.classList.add('lww-front');
+    }
+
+    toBack() {
+        // this.DOM.container.style['z-index'] = 21;
+        // this.DOM.container.classList.remove('lww-front');
+    }
+
     // Apply current sizing state to DOM
     resizeRelocateDOMContainer(animate) {
         window.requestAnimationFrame(() => {
@@ -394,6 +412,7 @@ class LWW {
                     top: ${this.state.location[1]};
                     width: ${this.options.bounds.max[0]};
                     height: ${this.options.bounds.max[1]};
+                    z-index: ${this._z}
                 `;
                         break;
                     case 'minsize':
@@ -406,6 +425,7 @@ class LWW {
                     top: ${this.state.location[1]};
                     width: ${this.options.bounds.min[0]};
                     height: ${this.options.bounds.min[1]};
+                    z-index: ${this._z};
                 `;
                         break;
                     case 'minimize':
@@ -422,7 +442,7 @@ class LWW {
                     top: ${btnBounds.top};
                     width: ${btnBounds.width};
                     height: ${btnBounds.height};
-                    z-index: -1;
+                    z-index: ${this._z};
                     opacity: 0;
                 `;
 
@@ -436,6 +456,7 @@ class LWW {
                     top: ${this.y0};
                     width: ${this.options.bounds.min[0]};
                     height: ${this.options.bounds.headerHeight};
+                    z-index: ${this._z};
                     `;
                         break;
                     default:
@@ -449,7 +470,7 @@ class LWW {
                     width: ${this.width};
                     height: ${this.height};
                     opacity: 1;
-                    z-index: 21;
+                    z-index: ${this._z};
                     display: block;
                     `;
                         break;
@@ -495,13 +516,13 @@ class LWW {
     }
 
     _applyDOMContentMargins() {
-        let newStyle = `
-            width: calc(100% - ${2 * this.options.resizeMargin}px);
-            height: calc(100% - ${this.options.bounds.headerHeight + this.options.resizeMargin}px);
-            left: ${this.options.resizeMargin}px;
-            `;
+        // let newStyle = `
+        //     width: calc(100% - ${2 * this.options.resizeMargin}px);
+        //     height: calc(100% - ${this.options.bounds.headerHeight + this.options.resizeMargin}px);
+        //     left: ${this.options.resizeMargin}px;
+        //     `;
 
-        this.DOM.content.style = newStyle;
+        // this.DOM.content.style = newStyle;
 
         // Forces style to be applied NOW
         getComputedStyle(this.DOM.content).width;
@@ -559,6 +580,8 @@ class LWW {
                 this.state.override = 'none';
             }
 
+            this.toFront();
+
             this.mouse.isDragging = true;
             this.mouse.moveCallback = this.inferMousemoveAction();
         }
@@ -569,13 +592,14 @@ class LWW {
             else
                 this.callbacks.resizeEnd(this.state.location, this.state.size);
 
+            this.toBack();
             this.mouse.isDragging = false;
             this.mouse.moveCallback = (I) => I;
             this._updateContainerHandles();
         }
 
         /*         this.DOM.content.addEventListener('mousemove', (e) => {
-                    console.log("mm content");
+                    //console.log("mm content");
 
                     if (!this.mouse.isDragging) {
                         e.stopImmediatePropagation();
@@ -585,7 +609,7 @@ class LWW {
                 }); */
 
         this.DOM.content.addEventListener('mouseenter', (e) => {
-            console.log("mm content");
+            //console.log("mm content");
 
             this.setMouseLoc('content');
             this._updateCursor();
@@ -598,7 +622,7 @@ class LWW {
         });
 
         this.DOM.content.addEventListener('mouseleave', (e) => {
-            console.log("mm content");
+            //console.log("mm content");
             this.setMouseLoc('none');
 
             if (!this.mouse.isDragging) {
@@ -737,7 +761,7 @@ class LWW {
 
     setMouseLoc(loc) {
         this.mouse.loc = loc;
-        console.log("setMouseLoc: " + loc);
+        //console.log("setMouseLoc: " + loc);
         this.callbacks.mouseLocChanged(this.mouse.loc);
     }
 
@@ -806,7 +830,7 @@ class LWW {
 
     __isWithinHandle(v, dir) {
         let handle = this.state.containerHandles[dir];
-        let contains = handle[0] <= v && v <= handle[1];
+        let contains = handle != null && handle[0] <= v && v <= handle[1];
         //console.log(contains + " --- Checking if " + v + " is on " + dir + " handle = [" + handle[0] + ', ' + handle[1] + ']');
         return contains;
     }

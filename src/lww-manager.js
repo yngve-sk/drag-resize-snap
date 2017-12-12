@@ -1,3 +1,4 @@
+const _ = require('lodash');
 let Dock = require('./lww-dock');
 let LWW = require('./lww-window');
 
@@ -31,8 +32,9 @@ let LWW = require('./lww-window');
     * spawning / despawning
     * positioning of the windows, ability to spawn next to an arbitrary div (Powered by popper.js) (TODO)
 */
+
 class LWWManager {
-    constructor() {
+    constructor(args) {
         this.cache = {
 
         };
@@ -40,7 +42,24 @@ class LWWManager {
         this.docks = {};
         this.windows = {};
 
+        this.zOrder = []; // index -> name, 0 is back, N is front
+
+        this.zStart = args.zStart || 21;
+
+        this.zIndices = [];
+
         this.parent = document.body;
+    }
+
+    moveToFront(window) {
+        _.pull(this.zOrder, window.name);
+        this.zOrder.push(window.name);
+        this._reflowZIndices();
+    }
+
+    _reflowZIndices() {
+        _.each(this.zOrder, (name, i) =>
+            this.windows[name].Z = this.zStart + i);
     }
 
     setParent(parent) {
@@ -57,6 +76,8 @@ class LWWManager {
         if (args.options.dock.name) {
             this.connectWindowToDock(name, args.options.dock.name);
         }
+
+        this._reflowZIndices();
     }
 
     getWindow(name) {

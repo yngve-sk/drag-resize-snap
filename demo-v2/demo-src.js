@@ -4,15 +4,17 @@ if (typeof require === 'function')
 else
     LWWManager = window.LWWManager;
 
-let BTN_HEIGHT = 40,
-    BTN_LENGTH = 60,
+let TheManager = new LWWManager({});
 
-    HEADER_HEIGHT = 30,
-    RESIZE_MARGIN = 12,
+let BTN_HEIGHT = 20,
+    BTN_LENGTH = 30,
+
+    HEADER_HEIGHT = 20,
+    RESIZE_MARGIN = 4,
 
     MIN_SIZE = [200, 200],
-    SIZE = [350, 250],
-    MAX_SIZE = [700, 700],
+    SIZE = [500, 500],
+    MAX_SIZE = [1200, 1200],
 
     LOC = [250, 250],
 
@@ -158,7 +160,7 @@ let count = 0;
 
 for (let DOCKNAME in DOCKS) {
     let CONFIG = DOCKS[DOCKNAME];
-    LWWManager.createDock(DOCKNAME, CONFIG);
+    TheManager.createDock(DOCKNAME, CONFIG);
 
     for (let WINCONFIGTEMPLATE of WINDOWS) {
         let WINCONFIG = {
@@ -171,9 +173,9 @@ for (let DOCKNAME in DOCKS) {
 
         let windowName = 'window' + count++;
 
-        LWWManager.addWindow(windowName, WINCONFIG);
+        TheManager.addWindow(windowName, WINCONFIG);
 
-        let theWindow = LWWManager.getWindow(windowName);
+        let theWindow = TheManager.getWindow(windowName);
         theWindow.on('resizeStart', (args) => console.log("ResizeStart! " + args[1]));
         theWindow.on('resize', (args) => console.log("Resize! " + args[1]));
         theWindow.on('resizeEnd', (args) => console.log("ResizeEnd! " + args[1]));
@@ -181,7 +183,7 @@ for (let DOCKNAME in DOCKS) {
         theWindow.on('move', (args) => console.log("move! " + args));
         theWindow.on('moveEnd', (args) => console.log("moveEnd! " + args));
 
-        let scope = LWWManager.getWindow(windowName).injectAngularDirective('lww-settings-view', NG_INJECT, {
+        let scope = TheManager.getWindow(windowName).injectAngularDirective('lww-settings-view', NG_INJECT, {
             winConfig: WINCONFIG,
             win: theWindow
         });

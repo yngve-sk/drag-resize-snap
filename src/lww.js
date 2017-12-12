@@ -1,6 +1,5 @@
 let LWWManager = require('./lww-manager');
 
-let theManager = new LWWManager();
-window.LWWManager = theManager;
+window.LWWManager = LWWManager;
 
-module.exports = theManager;
+module.exports = LWWManager;

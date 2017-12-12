@@ -1,0 +1,171 @@
+.lww-container {
+  font-family: Monaco, monospace;
+  text-shadow: 0px 0px 0px black;
+  color: black;
+  position: fixed;
+  text-align: center;
+  overflow: hidden;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  box-shadow: 2px 2px 10px #000000;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+/* .lww-animated {
+    -webkit-transition: width 250ms ease-in-out, height 250ms ease-in-out;
+    -moz-transition: width 250ms ease-in-out, height 250ms ease-in-out;
+    -o-transition: width 250ms ease-in-out, height 250ms ease-in-out;
+    transition: width 250ms ease-in-out, height 250ms ease-in-out;
+} */
+.lww-animated {
+  -webkit-transition: all 250ms ease-in-out;
+  -moz-transition: all 250ms ease-in-out;
+  -o-transition: all 250ms ease-in-out;
+  transition: all 250ms ease-in-out;
+}
+.lww-header {
+  display: inline-flex;
+  height: 30px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.76);
+}
+.lww-header-label {
+  margin-left: 30px;
+  flex: 5;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.lww-content {
+  position: absolute;
+  width: calc(100% - 10px);
+  height: calc(100% - 32.5px);
+  overflow: overlay;
+  border-radius: 5px;
+  left: 5px;
+  box-sizing: border-box;
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+.lww-header-buttons-container {
+  min-width: 140px;
+  max-width: 200px;
+  display: inline-flex;
+  align-items: center;
+  flex: 1;
+}
+.lww-header-button {
+  width: 30%;
+  margin-right: 3%;
+  height: 80%;
+  border-radius: 2px;
+  box-sizing: border-box;
+  border: 1px rgba(0, 0, 0, 0.4) solid;
+  box-shadow: 2px 2px 3px black;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-clip: border-box;
+}
+.lww-header-button:active {
+  filter: invert(80%);
+}
+.lww-header-button:hover {
+  filter: invert(30%);
+}
+.lww-header-close {
+  background-image: url('../../../icons/close.png');
+}
+.lww-header-minimize {
+  background-image: url('../../../icons/minimize.png');
+}
+.lww-header-maximize {
+  background-image: url('../../../icons/maximize.png');
+}
+.lww-header-collapse {
+  background-image: url('../../../icons/chev-down.png');
+}
+.lww-header-minsize {
+  background-image: url('../../../icons/minsize.png');
+}
+.lww-dock-container {
+  position: fixed;
+  /* DEBUG */
+  background: transparent;
+}
+.lww-dock-container.vertical.downwards {
+  flex-flow: column;
+}
+.lww-dock-container.vertical.upwards {
+  flex-flow: column-reverse;
+}
+.lww-dock-container.horizontal.rightwards {
+  flex-flow: row;
+}
+.lww-dock-container.horizontal.leftwards {
+  flex-flow: row-reverse;
+}
+.lww-dock-container.vertical {
+  display: flex;
+  /* height: 100%; */
+}
+.lww-dock-container.horizontal {
+  display: flex;
+  /* width: 100%; */
+}
+.lww-docked-window {
+  border-radius: 8px;
+  box-shadow: 2px 2px 2px black;
+  text-align: center;
+  display: flex;
+  align-items: flex-end;
+  z-index: 501;
+}
+.lww-docked-window:hover {
+  filter: invert(40%);
+}
+.lww-docked-window:active {
+  filter: invert(80%);
+}
+.lww-docked-window.vertical {
+  /* min-height: 100px; */
+  width: 100%;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#000000+28,000000+90&0+0,0.22+69,0.51+94,0.59+98 */
+  background: -moz-linear-gradient(left, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.09) 28%, rgba(0, 0, 0, 0.22) 69%, rgba(0, 0, 0, 0.46) 90%, rgba(0, 0, 0, 0.51) 94%, rgba(0, 0, 0, 0.59) 98%);
+  /* FF3.6-15 */
+  background: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.09) 28%, rgba(0, 0, 0, 0.22) 69%, rgba(0, 0, 0, 0.46) 90%, rgba(0, 0, 0, 0.51) 94%, rgba(0, 0, 0, 0.59) 98%);
+  /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.09) 28%, rgba(0, 0, 0, 0.22) 69%, rgba(0, 0, 0, 0.46) 90%, rgba(0, 0, 0, 0.51) 94%, rgba(0, 0, 0, 0.59) 98%);
+  /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#00000000', endColorstr='#96000000', GradientType=1);
+  /* IE6-9 */
+}
+.lww-docked-window.horizontal {
+  /*     min-width: 100px; */
+  height: 100%;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#000000+10,000000+72&0.59+2,0.51+6,0.22+31,0+100 */
+  background: -moz-linear-gradient(top, rgba(0, 0, 0, 0.59) 2%, rgba(0, 0, 0, 0.51) 6%, rgba(0, 0, 0, 0.46) 10%, rgba(0, 0, 0, 0.22) 31%, rgba(0, 0, 0, 0.09) 72%, rgba(0, 0, 0, 0) 100%);
+  /* FF3.6-15 */
+  background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.59) 2%, rgba(0, 0, 0, 0.51) 6%, rgba(0, 0, 0, 0.46) 10%, rgba(0, 0, 0, 0.22) 31%, rgba(0, 0, 0, 0.09) 72%, rgba(0, 0, 0, 0) 100%);
+  /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.59) 2%, rgba(0, 0, 0, 0.51) 6%, rgba(0, 0, 0, 0.46) 10%, rgba(0, 0, 0, 0.22) 31%, rgba(0, 0, 0, 0.09) 72%, rgba(0, 0, 0, 0) 100%);
+  /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#96000000', endColorstr='#00000000', GradientType=0);
+  /* IE6-9 */
+}
+.lww-dock-label {
+  font-family: Monaco, monospace;
+  font-size: 8px;
+  user-select: none;
+}
+.lww-docked-window.vertical > .lww-dock-label {
+  transform-origin: left top 0;
+  transform: rotate(-69deg);
+}

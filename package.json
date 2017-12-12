@@ -50,7 +50,10 @@
   "bugs": {
     "url": "https://github.com/yngve-sk/lww.js/issues"
   },
-  "dependencies": {},
+  "dependencies": {
+    "grunt-contrib-less": "^1.4.1",
+    "lodash": "^4.17.4"
+  },
   "description": "A lightweight javascript windowing library. Provides a few basic operations: Resize, collapse, close and maximize. This library is primarily meant for being able to spawn a window with arbitrary content - I.E it works best as being nothing but a wrapper around some content you only want to show at certain times. Built on https://github.com/arctelix/drag-resize-snap",
   "devDependencies": {
     "grunt": "^1.0.1",

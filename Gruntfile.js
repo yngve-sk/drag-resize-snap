@@ -24,12 +24,32 @@ module.exports = function (grunt) {
                 interval: 100
             },
             js: {
-                //files: ['src/**/*.js', 'demo/**/*.js', '!demo/demo-compiled.js'],
-                files: ['src/**/*.js', 'demo-v2/**/*.js', '!demo-v2/demo.js'],
+                files: ['src/**/*.js', 'demo/**/*.js', '!demo/demo-compiled.js'],
+                // files: ['src/**/*.js', 'demo-v2/**/*.js', '!demo-v2/demo.js'],
                 tasks: [
-                    //'dist',
+                    'dist',
                     'demo2'
                 ]
+            },
+            css: {
+                files: [
+                    './src/style/less/**/*.less'
+                ],
+                tasks: ['less'],
+                options: {
+                    livereload: true
+                }
+            }
+        },
+        less: {
+            dev: {
+                options: {
+                    paths: ['./src/style/less/**/*.less'],
+                    strictMath: true
+                },
+                files: {
+                    './src/style/css/lww.css': './src/style/less/lww.less'
+                }
             }
         },
         browserify: {
@@ -85,5 +105,5 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('dist', ['browserify:dist']);
-    grunt.registerTask('demo2', ['browserify:demo2']);
+    grunt.registerTask('demo2', ['browserify:demo2', 'less:dev']);
 };
