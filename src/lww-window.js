@@ -90,7 +90,15 @@ class LWW {
 
                         minimize: (I) => I,
                         unminimize: (I) => I, */
-        }
+        };
+
+        this.W = window.document.body.clientWidth;
+        this.H = window.document.body.clientHeight;
+
+        window.addEventListener('resize', () => {
+            this.W = window.document.body.clientWidth;
+            this.H = window.document.body.clientHeight;
+        });
 
         this._init();
     }
@@ -124,7 +132,49 @@ class LWW {
     }
 
     relocate(x, y) {
-        this.state.location = [x, y];
+
+        let x0 = this.x0,
+            y0 = this.y0,
+            x1 = this.x1,
+            y1 = this.y1;
+
+        let dx = x - x0,
+            dy = y - y0;
+
+        let newX1 = x1 + dx,
+            newY1 = y1 + dy,
+            newX0 = x0 + dx,
+            newY0 = y0 + dy;
+
+        if (newX0 < 0) {
+            dx = -newX0;
+            newX0 += dx;
+            newX1 += dx;
+        }
+
+        if (newX1 > this.W) {
+            dx = (this.W - x1);
+            newX0 = x0 + dx;
+            newX1 = x1 + dx;
+        }
+
+        if (newY0 < 0) {
+            dy = -newY0;
+            newY0 += dy;
+            newY1 += dy;
+        }
+
+        if (newY1 > this.H) {
+            dy = (this.H - y1);
+            newY0 = y0 + dy;
+            newY1 = y1 + dy;
+        }
+
+        this.x0 = newX0;
+        this.y0 = newY0;
+        this.x1 = newX1;
+        this.y1 = newY1;
+
         this.resizeRelocateDOMContainer();
         this.callbacks.move(this.state.location);
     }
@@ -180,22 +230,22 @@ class LWW {
     // ------------------------
     // Clamping
     _clampWidth(w) {
-        return Math.max(this.minWidth, Math.min(this.maxWidth, w));
+        return Math.min(this.W - this.x0, Math.max(this.minWidth, Math.min(this.maxWidth, w)));
     }
 
     _clampHeight(h) {
-        return Math.max(this.minHeight, Math.min(this.maxHeight, h));
+        return Math.min(this.H - this.y0, Math.max(this.minHeight, Math.min(this.maxHeight, h)));
     }
 
     _clampX0(x0, x1) {
-        let minX0 = x1 - this.maxWidth,
+        let minX0 = Math.max(0, x1 - this.maxWidth),
             maxX0 = x1 - this.minWidth;
 
         return Math.min(maxX0, Math.max(minX0, x0));
     }
 
     _clampY0(y0, y1) {
-        let minY0 = y1 - this.maxHeight,
+        let minY0 = Math.max(0, y1 - this.maxHeight),
             maxY0 = y1 - this.minHeight;
 
         return Math.min(maxY0, Math.max(minY0, y0));
@@ -400,6 +450,7 @@ class LWW {
             if (animate !== false)
                 this.enableAnimate();
 
+
             if (this.state.override)
                 switch (this.state.override) {
                     case 'maximize':
@@ -440,8 +491,8 @@ class LWW {
                         newStyle = `
                     left: ${btnBounds.left};
                     top: ${btnBounds.top};
-                    width: ${btnBounds.width};
-                    height: ${btnBounds.height};
+                    width: ${this.width};
+                    height: ${this.height};
                     z-index: ${this._z};
                     opacity: 0;
                 `;

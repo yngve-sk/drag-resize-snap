@@ -81,19 +81,19 @@
   filter: invert(30%);
 }
 .lww-header-close {
-  background-image: url('../../../icons/close.png');
+  background-image: url('../../icons/close.png');
 }
 .lww-header-minimize {
-  background-image: url('../../../icons/minimize.png');
+  background-image: url('../../icons/minimize.png');
 }
 .lww-header-maximize {
-  background-image: url('../../../icons/maximize.png');
+  background-image: url('../../icons/maximize.png');
 }
 .lww-header-collapse {
-  background-image: url('../../../icons/chev-down.png');
+  background-image: url('../../icons/chev-down.png');
 }
 .lww-header-minsize {
-  background-image: url('../../../icons/minsize.png');
+  background-image: url('../../icons/minsize.png');
 }
 .lww-dock-container {
   position: fixed;
