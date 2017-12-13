@@ -6,8 +6,8 @@ else
 
 let TheManager = new LWWManager({});
 
-let BTN_HEIGHT = 20,
-    BTN_LENGTH = 30,
+let BTN_HEIGHT = 30,
+    BTN_LENGTH = 75,
 
     HEADER_HEIGHT = 20,
     RESIZE_MARGIN = 4,

@@ -60,6 +60,8 @@ class LWW {
         this.name = name;
         this.manager = manager;
 
+        this.icon = args.icon || 'lww-default';
+
         this.options = args.options;
         this.state = args.state;
         this.state.containerHandles = {};
@@ -372,10 +374,12 @@ class LWW {
     _initDOM() {
         let container = document.createElement('div');
         let header = document.createElement('div'),
+            headerIcon = document.createElement('div'),
             headerLabel = document.createElement('div'),
             headerButtonsContainer = document.createElement('div'),
             buttons = {};
 
+        header.appendChild(headerIcon);
         header.appendChild(headerLabel);
         header.appendChild(headerButtonsContainer);
 
@@ -391,6 +395,7 @@ class LWW {
         container.setAttribute('class', 'lww-container');
         container.style['z-index'] = 21;
         header.setAttribute('class', 'lww-header');
+        headerIcon.setAttribute('class', 'lww-header-icon ' + this.icon);
         headerLabel.setAttribute('class', 'lww-header-label');
         headerButtonsContainer.setAttribute('class', 'lww-header-buttons-container');
         content.setAttribute('class', 'lww-content');

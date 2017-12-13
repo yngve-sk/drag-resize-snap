@@ -3,3 +3,9 @@
 @maximize-icon: url('../../icons/maximize.png');
 @minsize-icon: url('../../icons/minsize.png');
 @collapse-icon: url('../../icons/chev-down.png');
+
+// Add icons here! Class will correspond icon name,
+// given in the initial arguments when creating a window.
+.lww-dock-icon,.lww-header-icon {
+    &.lww-default { background-image: @close-icon; }
+}

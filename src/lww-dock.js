@@ -211,14 +211,13 @@ class Dock {
             if (theWindow.state.override === 'minimize') { // Render
                 style = `
                     ${lengthKey}: ${this.options.buttonLength};
-                    display: flex
+                    display:
                 `;
             } else {
                 style = 'display: none';
             }
 
             this.DOM.windows[win].style = style;
-
         }
     }
 
@@ -236,7 +235,7 @@ class Dock {
         let icon = document.createElement('div');
         let label = document.createElement('div');
 
-        icon.setAttribute('class', 'lww-dock-icon');
+        icon.setAttribute('class', 'lww-dock-icon ' + theWindow.icon);
         label.setAttribute('class', 'lww-dock-label')
 
         label.innerHTML = theWindow.options.title;

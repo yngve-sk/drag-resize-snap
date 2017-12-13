@@ -58,6 +58,17 @@
     // filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#96000000', endColorstr='#00000000', GradientType=0);
     // /* IE6-9 */
     background: @background-color;
+
+    >.lww-header-icon {
+        width: @header-icon-width;
+        margin-left: @content-padding;
+        height: 100%;
+
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-clip: border-box;
+    }
 }
 
 .lww-header-label {
@@ -127,87 +138,71 @@
     position: fixed;
     /* DEBUG */
     background: transparent;
-}
 
-.lww-dock-container.vertical.downwards {
-    flex-flow: column;
-}
-
-.lww-dock-container.vertical.upwards {
-    flex-flow: column-reverse;
-}
-
-.lww-dock-container.horizontal.rightwards {
-    flex-flow: row;
-}
-
-.lww-dock-container.horizontal.leftwards {
-    flex-flow: row-reverse;
-}
-
-.lww-dock-container.vertical {
-    display: flex;
-    /* height: 100%; */
-}
-
-.lww-dock-container.horizontal {
-    display: flex;
-    /* width: 100%; */
+    &.vertical.downwards { flex-flow: column; }
+    &.vertical.upwards { flex-flow: column-reverse; }
+    &.horizontal.rightwards { flex-flow: row; }
+    &.horizontal.leftwards { flex-flow: row-reverse; }
+    &.vertical { display: flex; }
+    &.horizontal { display: flex; }
 }
 
 .lww-docked-window {
+    border: @docked-border;
     border-radius: @docked-border-radius;
-    box-shadow: 2px 2px 2px black;
+    box-shadow:  @docked-box-shadow;
     text-align: center;
     display: flex;
     align-items: flex-end;
     z-index: 501;
+
+    &:hover { filter: invert(40%); }
+    &:active { filter: invert(80%); }
+
+    &.vertical {
+        width: 100%;
+        background: white;
+
+        >.lww-dock-label {
+            transform-origin: left top 0;
+            transform: @v-dock-label-transform;
+        }
+
+        >.lww-dock-icon {
+            height: @dock-icon-size;
+            width: 100%;
+            margin-top: @content-padding
+        }
+    }
+
+    &.horizontal {
+        height: 100%;
+
+        justify-content: center;
+        align-items: center;
+
+        >.lww-dock-icon {
+            width: @dock-icon-size;
+            height: 100%;
+            margin-left: @content-padding
+        }
+    }
+
+    >.lww-dock-label {
+        font-family: @font;
+        font-size: @dock-label-font-size;
+
+        user-select: none;
+    }
+
+    >.lww-dock-icon {
+        display: flex;
+        text-align: center;
+
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-clip: border-box;
+    }
 }
 
-.lww-docked-window:hover {
-    filter: invert(40%);
-}
-
-.lww-docked-window:active {
-    filter: invert(80%);
-}
-
-.lww-docked-window.vertical {
-    /* min-height: 100px; */
-    width: 100%;
-    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#000000+28,000000+90&0+0,0.22+69,0.51+94,0.59+98 */
-    background: -moz-linear-gradient(left, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.09) 28%, rgba(0, 0, 0, 0.22) 69%, rgba(0, 0, 0, 0.46) 90%, rgba(0, 0, 0, 0.51) 94%, rgba(0, 0, 0, 0.59) 98%);
-    /* FF3.6-15 */
-    background: -webkit-linear-gradient(left, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.09) 28%, rgba(0, 0, 0, 0.22) 69%, rgba(0, 0, 0, 0.46) 90%, rgba(0, 0, 0, 0.51) 94%, rgba(0, 0, 0, 0.59) 98%);
-    /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to right, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.09) 28%, rgba(0, 0, 0, 0.22) 69%, rgba(0, 0, 0, 0.46) 90%, rgba(0, 0, 0, 0.51) 94%, rgba(0, 0, 0, 0.59) 98%);
-    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#96000000', GradientType=1);
-    /* IE6-9 */
-}
-
-.lww-docked-window.horizontal {
-    /*     min-width: 100px; */
-    height: 100%;
-    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#000000+10,000000+72&0.59+2,0.51+6,0.22+31,0+100 */
-    background: -moz-linear-gradient(top, rgba(0, 0, 0, 0.59) 2%, rgba(0, 0, 0, 0.51) 6%, rgba(0, 0, 0, 0.46) 10%, rgba(0, 0, 0, 0.22) 31%, rgba(0, 0, 0, 0.09) 72%, rgba(0, 0, 0, 0) 100%);
-    /* FF3.6-15 */
-    background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.59) 2%, rgba(0, 0, 0, 0.51) 6%, rgba(0, 0, 0, 0.46) 10%, rgba(0, 0, 0, 0.22) 31%, rgba(0, 0, 0, 0.09) 72%, rgba(0, 0, 0, 0) 100%);
-    /* Chrome10-25,Safari5.1-6 */
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.59) 2%, rgba(0, 0, 0, 0.51) 6%, rgba(0, 0, 0, 0.46) 10%, rgba(0, 0, 0, 0.22) 31%, rgba(0, 0, 0, 0.09) 72%, rgba(0, 0, 0, 0) 100%);
-    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#96000000', endColorstr='#00000000', GradientType=0);
-    /* IE6-9 */
-}
-
-.lww-dock-label {
-    font-family: @font;
-    font-size: @dock-label-font-size;
-
-    user-select: none;
-}
-
-.lww-docked-window.vertical>.lww-dock-label {
-    transform-origin: left top 0;
-    transform: @v-dock-label-transform;
-}

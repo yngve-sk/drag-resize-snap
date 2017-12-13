@@ -17314,14 +17314,13 @@ class Dock {
             if (theWindow.state.override === 'minimize') { // Render
                 style = `
                     ${lengthKey}: ${this.options.buttonLength};
-                    display: flex
+                    display:
                 `;
             } else {
                 style = 'display: none';
             }
 
             this.DOM.windows[win].style = style;
-
         }
     }
 
@@ -17339,7 +17338,7 @@ class Dock {
         let icon = document.createElement('div');
         let label = document.createElement('div');
 
-        icon.setAttribute('class', 'lww-dock-icon');
+        icon.setAttribute('class', 'lww-dock-icon ' + theWindow.icon);
         label.setAttribute('class', 'lww-dock-label')
 
         label.innerHTML = theWindow.options.title;
@@ -17526,6 +17525,8 @@ class LWW {
     constructor(name, args, manager) {
         this.name = name;
         this.manager = manager;
+
+        this.icon = args.icon || 'lww-default';
 
         this.options = args.options;
         this.state = args.state;
@@ -17839,10 +17840,12 @@ class LWW {
     _initDOM() {
         let container = document.createElement('div');
         let header = document.createElement('div'),
+            headerIcon = document.createElement('div'),
             headerLabel = document.createElement('div'),
             headerButtonsContainer = document.createElement('div'),
             buttons = {};
 
+        header.appendChild(headerIcon);
         header.appendChild(headerLabel);
         header.appendChild(headerButtonsContainer);
 
@@ -17858,6 +17861,7 @@ class LWW {
         container.setAttribute('class', 'lww-container');
         container.style['z-index'] = 21;
         header.setAttribute('class', 'lww-header');
+        headerIcon.setAttribute('class', 'lww-header-icon ' + this.icon);
         headerLabel.setAttribute('class', 'lww-header-label');
         headerButtonsContainer.setAttribute('class', 'lww-header-buttons-container');
         content.setAttribute('class', 'lww-content');
