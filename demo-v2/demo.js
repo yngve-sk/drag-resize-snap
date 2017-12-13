@@ -17719,7 +17719,7 @@ class LWW {
         this.name = name;
         this.manager = manager;
 
-        this.icon = args.icon || 'lww-default';
+        this.icon = args.options.icon || 'lww-default';
 
         this.options = args.options;
         this.state = args.state;
