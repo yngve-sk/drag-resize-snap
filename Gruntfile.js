@@ -9,6 +9,9 @@ module.exports = function (grunt) {
 
 
     grunt.initConfig({
+        server: {
+            port: grunt.option('port') || 35554
+        },
         jsdoc: {
             dist: {
                 //src: ['src/*.js'],
@@ -21,7 +24,7 @@ module.exports = function (grunt) {
         },
         watch: {
             options: {
-                interval: 100
+                interval: 100,
             },
             js: {
                 files: ['src/**/*.js', 'demo/**/*.js', '!demo/demo-compiled.js'],
@@ -37,7 +40,7 @@ module.exports = function (grunt) {
                 ],
                 tasks: ['less'],
                 options: {
-                    livereload: true
+                    livereload: 33333
                 }
             }
         },
